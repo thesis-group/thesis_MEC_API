@@ -98,7 +98,8 @@ public enum Strategy implements StrategyService {
             double sadSum = adHocParam.sad.stream().reduce((a, b) -> a + b).get();
             double eSpeed = adHocParam.ps * sadSum / adHocParam.l;
             //计算超时失败率
-            double pHt = 2 * adHocParam.p2 * adHocParam.p3;
+            double pHt = Math.pow(adHocParam.p1,2) + Math.pow(adHocParam.p1,2) +  Math.pow(adHocParam.p1,2)
+                        +2 * adHocParam.p2 * adHocParam.p3;
             double pVt = 2 * adHocParam.p1 * adHocParam.p3 + 2 * adHocParam.p1 * adHocParam.p2;
 
             //计算瑞利分布函数
@@ -211,7 +212,7 @@ public enum Strategy implements StrategyService {
                         + (adHocParam.edown * task.getOp()/adHocParam.rdown));
 
                 double cost = Argument.wAD1 * eComp + Argument.wAD2 * cPay + Argument.wAD3 * fsch;
-                return new RewardBackValue(fsch , rtt , cost);
+                return new RewardBackValue(fsch, rtt, cost);
             }
 
         }
