@@ -1,5 +1,7 @@
 package property;
-
+/*
+ *fix value in parameter table
+ */
 public class FixParameterTable {
     //The parameter in estimate the average TCS size
     public static double aG = 0;

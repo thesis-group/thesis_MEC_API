@@ -6,6 +6,9 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.ResourceBundle;
 
+/**
+ * 变量表
+ */
 public class VariableTable {
 
     //zone ids, z is the maximum id value

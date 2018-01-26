@@ -1,5 +1,8 @@
 package property;
 
+/**
+ * User given value in the parameter table
+ */
 public class GivenParameterTable {
     //The weight value of energy consumption in 𝐶𝐿(𝒮)
     public static double wL1 = 0;

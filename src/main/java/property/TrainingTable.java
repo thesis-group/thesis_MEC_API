@@ -1,5 +1,8 @@
 package property;
 
+/**
+ * 用于训练的数据
+ */
 public class TrainingTable {
     public static int rest; //剩余生命周期
     public static int k;  //最大执行次数上限
