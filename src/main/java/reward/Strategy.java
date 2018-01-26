@@ -106,7 +106,6 @@ public enum Strategy implements StrategyService {
             Function<Double,Double> f =
                     x -> (x*x/adHocParam.sigma)*Math.exp(-x*x/(2*adHocParam.sigma*adHocParam.sigma));
 
-            //TODO E_cp
             //通过自组织网的一次执行时间 这里原公式E_cp 就当做是E_speed了
             double taoAd = task.getIp() / adHocParam.rad
                     + task.getWl() / eSpeed
@@ -117,7 +116,6 @@ public enum Strategy implements StrategyService {
                     + task.getWl() / eSpeed
                     + adHocParam.delta *  task.getOp()/adHocParam.rdown;
 
-            //TODO 曼哈顿模型
             //水平情况
                 //呈同一方向  假设v1和v2都是标量
                 double v = Math.abs(adHocParam.v1 - adHocParam.v2);
@@ -172,11 +170,11 @@ public enum Strategy implements StrategyService {
 
             // 如果选择自组织网
             if( isAd ){
-                // 一次执行时间  TODO r_ch是个傻我觉得是rad 所以直接用上面算的了
+                // 一次执行时间
                 double time = taoAd;
                 int kp = (int)(task.getRest()/time);
                 double fsch = adHocParam.cPen * Math.pow(1-pAd, kp);
-                // TODO 这里需要wait？
+                // TODO 这里需要wait？ 不需要
                 double rtt = task.getWait();
                 //计算期望的能耗 TODO er没放在输出 放在argument里了
                 double eComp = (Argument.er * task.getIp()/adHocParam.rad)
@@ -202,7 +200,7 @@ public enum Strategy implements StrategyService {
                 //计算期望的能耗
                 double eComp = (adHocParam.eup * task.getIp()/adHocParam.rup)
                         + (adHocParam.edown * task.getOp()/adHocParam.rdown);
-                // TODO 原公式有问题？ kp 还是 kp-1
+                // TODO 原公式有问题？ kp 还是 kp-1 该
                 for(int i = 1 ; i <= kp ; i++){
                     rtt += Math.pow((1 - pAd),i) * i * time;
                     eComp *= Math.pow((1 - pAd),i) * i;
