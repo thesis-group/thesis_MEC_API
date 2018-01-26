@@ -77,13 +77,15 @@ public enum Strategy implements StrategyService {
             //计算能耗期望
             double Ecom=Eenergy*k_;
 
+            //计算支付
+            double Cpay=cloudletParam.cCloudlet*task.getWl()/cloudletParam.sCloudlet;
+
             //计算代价
-//            double cost=Argument.wCL1*Ecom+Argument.wCL2*Csch+Argument.wCL3*Fsch;
+            double cost=Argument.wCL1*Ecom+Argument.wCL2*Cpay+Argument.wCL3*Fsch;
 
             //返回值
-//            RewardBackValue rewardBackValue=new RewardBackValue(failureRate,RTT,cost);
-//            return rewardBackValue;
-            return null;
+            RewardBackValue rewardBackValue=new RewardBackValue(failureRate,RTT,cost);
+            return rewardBackValue;
         }
     },
     // 自组织网卸载
