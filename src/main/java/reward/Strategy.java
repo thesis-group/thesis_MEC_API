@@ -1,10 +1,7 @@
 package reward;
 
 import model.Task;
-import param.AdHocParam;
-import param.Argument;
-import param.LocalParam;
-import param.RewardParam;
+import param.*;
 import tools.Calculus;
 
 import java.util.function.Function;
@@ -15,13 +12,77 @@ public enum Strategy implements StrategyService {
         public RewardBackValue calculateReward(Task task, RewardParam param) {
             assert param instanceof LocalParam : "param do not instance of LocalParam";
             LocalParam localParam = (LocalParam)param;
+
+            //计算可执行次数k_
             int k_=(int)(task.getRest()/(task.getWl()/Argument.sCpu));
-            return null;
+            k_=k_>task.getK()?task.getK():k_;
+
+            //计算失误率
+            double failureRate=Math.pow(localParam.fl,k_);
+
+            //计算失误惩罚
+            double Fsch=localParam.cPen*failureRate;
+
+            //计算RTT 和 eCpu
+            double RTT=task.getWait();
+            double Ecpu=localParam.eCpu;
+            double temp=(1-localParam.fl)*(task.getWl()/Argument.sCpu);
+            double middleValue=0;
+            for(int i=1;i<=k_;i++){
+                middleValue+=Math.pow(localParam.fl,i-1)*i*temp;
+            }
+            RTT+=middleValue;
+            Ecpu*=middleValue;
+
+            //计算执行花销
+            double Csch=(task.getWl()/Argument.sCpu)*localParam.cl;
+
+            //计算代价
+            double cost=Argument.wL1*Ecpu+Argument.wL2*Csch+Argument.wL3*Fsch;
+
+            //返回值
+            RewardBackValue rewardBackValue=new RewardBackValue(failureRate,RTT,cost);
+            return rewardBackValue;
         }
     },
     // 薄云卸载
     Cloudlet {
         public RewardBackValue calculateReward(Task task, RewardParam param) {
+            assert param instanceof CloudletParam : "param do not instance of CloudletParam";
+            CloudletParam cloudletParam = (CloudletParam)param;
+
+            //计算上行传输错误概率
+            double pUp=cloudletParam.fUp*(1-cloudletParam.fDown)/(1-cloudletParam.fUp*cloudletParam.fDown);
+            //计算下行传输错误概率
+            double pDown=cloudletParam.eDown*(1-cloudletParam.fUp)/(1-cloudletParam.fUp*cloudletParam.fDown);
+            //计算任务一次尝试执行的期望时间
+            double Etime=pUp*(task.getIp()/cloudletParam.rUp)*cloudletParam.delta+(1-pUp)*((task.getIp()/cloudletParam.rUp)*cloudletParam.delta+task.getWl()/cloudletParam.sCloudlet+(task.getOp()/cloudletParam.rDown)*cloudletParam.delta);
+
+            //计算可执行次数k_
+            int k_=(int)(task.getRest()/Etime);
+            k_=k_>task.getK()?task.getK():k_;
+
+            //计算期望能耗
+            double Eenergy=cloudletParam.eUp*(task.getIp()/cloudletParam.rUp)*cloudletParam.delta+(1-pUp)*(cloudletParam.eUp*(task.getIp()/cloudletParam.rUp)*cloudletParam.delta+task.getWl()/cloudletParam.sCloudlet+cloudletParam.eDown*(task.getOp()/cloudletParam.rDown)*cloudletParam.delta);
+
+            //计算卸载到薄云的故障率
+            double pCloudlet=(cloudletParam.fUp*(1-cloudletParam.fDown)+cloudletParam.fDown*(1-cloudletParam.fUp))/(1-cloudletParam.fUp*cloudletParam.fDown);
+
+            //计算失败率
+            double failureRate=Math.pow(pCloudlet,k_);
+            //计算失败惩罚
+            double Fsch=cloudletParam.cPen*failureRate;
+            //计算RTT
+            double RTT=task.getWait()+k_*Etime;
+            //计算能耗期望
+            double Ecom=Eenergy*k_;
+
+            //计算代价
+//            double cost=Argument.wCL1*Ecom+Argument.wCL2*Csch+Argument.wCL3*Fsch;
+
+            //返回值
+//            RewardBackValue rewardBackValue=new RewardBackValue(failureRate,RTT,cost);
+//            return rewardBackValue;
             return null;
         }
     },
