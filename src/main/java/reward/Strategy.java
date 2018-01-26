@@ -187,6 +187,8 @@ public enum Strategy implements StrategyService {
                 }
                 double cPay = adHocParam.cad * adHocParam.delta * (Argument.er * task.getIp()/adHocParam.rad)
                         + (Argument.er * task.getOp()/adHocParam.rad);
+                double cost = Argument.wAD1 * eComp + Argument.wAD2 * cPay + Argument.wAD3 * fsch;
+                return new RewardBackValue(fsch , rtt , cost);
             }
             // 如果选择接入网
             else {
@@ -207,14 +209,11 @@ public enum Strategy implements StrategyService {
                 }
                 double cPay = adHocParam.cad * adHocParam.delta * ((adHocParam.eup * task.getIp()/adHocParam.rup)
                         + (adHocParam.edown * task.getOp()/adHocParam.rdown));
+
+                double cost = Argument.wAD1 * eComp + Argument.wAD2 * cPay + Argument.wAD3 * fsch;
+                return new RewardBackValue(fsch , rtt , cost);
             }
 
-
-
-
-
-
-            return null;
         }
 
     };
