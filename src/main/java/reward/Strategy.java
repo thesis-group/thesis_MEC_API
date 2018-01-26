@@ -13,8 +13,9 @@ public enum Strategy implements StrategyService {
     // 本地卸载
     Local {
         public RewardBackValue calculateReward(Task task, RewardParam param) {
+            assert param instanceof LocalParam : "param do not instance of LocalParam";
             LocalParam localParam = (LocalParam)param;
-
+            int k_=(int)(task.getRest()/(task.getWl()/Argument.sCpu));
             return null;
         }
     },
