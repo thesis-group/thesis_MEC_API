@@ -4,6 +4,7 @@ public class TrainParam {
     public static String savepath = "./test.txt"; //保存文件路径 原来的路径 + 文件名
     public static int iter ;  // 训练迭代次数
     public static double epsilon; //贪心算法选定的epsilon值
+    public static double temp; //softmax算法需要的温度
 
     public static int rest; //剩余生命周期
     public static int k;  //最大执行次数上限

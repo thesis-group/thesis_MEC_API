@@ -28,12 +28,13 @@ public enum Learning  {
             State state = new State(stateID);
             Map<Strategy, Integer> count = new HashMap<>();
             Map<Strategy, Double> reward = new HashMap<>();
+            Map<Strategy, Double> action = new HashMap<>();
             List<Strategy> possibleAction =ActionFilter.getPossibleAction(state);
             possibleAction.forEach(t->count.put(t,0));
             possibleAction.forEach(t->reward.put(t,0.0));
             Random random = new Random();
 
-            for(int i = 0 ; i < TrainParam.iter  ; i++){
+            for(int i = 0 ; i < TrainParam.iter ; i++){
                 Strategy choosed = null;
                 // 选择那个一个action
                 if(random.nextDouble() < TrainParam.epsilon){
