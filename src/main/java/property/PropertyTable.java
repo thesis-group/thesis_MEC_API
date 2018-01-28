@@ -1,10 +1,7 @@
 package property;
 
 import model.GroundMap;
-import param.AdHocParam;
-import param.Argument;
-import param.CloudletParam;
-import param.LocalParam;
+import param.*;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -120,6 +117,16 @@ public class PropertyTable {
         CloudletParam.rUp=VariableTable.rUp;
         CloudletParam.rDown=VariableTable.rDown;
 
+        TrainParam.epsilon=FixParameterTable.epsilon;
+        TrainParam.iter=TrainingTable.times;
+        TrainParam.ip=TrainingTable.ip;
+        TrainParam.op=TrainingTable.op;
+        TrainParam.k=TrainingTable.k;
+        TrainParam.rest=TrainingTable.rest;
+        TrainParam.lifespan=TrainingTable.lifespan;
+        TrainParam.rtt=TrainingTable.RTT;
+        TrainParam.wl=TrainingTable.wl;
+        TrainParam.savepath=TrainingTable.resultFilePath;
     }
 
 }
