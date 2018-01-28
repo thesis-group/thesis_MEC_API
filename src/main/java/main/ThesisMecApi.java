@@ -1,11 +1,24 @@
 package main;
 
 import property.PropertyTable;
+import property.TrainingTable;
+import rl.Learning;
 
 public class ThesisMecApi {
     public static void main(String[] args) {
         PropertyTable.init();
-        //TODO 调用训练算法
+        train();
         //TODO 调用调度方法
+    }
+
+    public static void train(){
+        switch (TrainingTable.algorithm){
+            case 0: //贪心算法
+                Learning.greedy.train();
+                break;
+            case 1: //softmax算法
+                Learning.softmax.train();
+                break;
+        }
     }
 }

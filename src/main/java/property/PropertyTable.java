@@ -1,6 +1,7 @@
 package property;
 
 import model.GroundMap;
+import model.Result;
 import param.*;
 
 import java.lang.reflect.Field;
@@ -126,7 +127,10 @@ public class PropertyTable {
         TrainParam.lifespan=TrainingTable.lifespan;
         TrainParam.rtt=TrainingTable.RTT;
         TrainParam.wl=TrainingTable.wl;
-        TrainParam.savepath=TrainingTable.resultFilePath;
+        TrainParam.savepath=TrainingTable.resultFilePath+TrainingTable.resultFileName;
+        TrainParam.temp=FixParameterTable.rho;
+
+        Result.setFile(TrainParam.savepath);
     }
 
 }

@@ -17,5 +17,5 @@ public class TrainingTable {
 
     //训练结果信息
     public static String resultFileName;//训练结果文件名
-    public static String resultFilePath;//训练结果文件路径
+    public static String resultFilePath;//训练结果文件夹路径
 }
