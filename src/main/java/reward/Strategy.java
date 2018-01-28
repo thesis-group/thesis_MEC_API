@@ -180,7 +180,8 @@ public enum Strategy implements StrategyService {
                 double eComp = (Argument.er * task.getIp()/adHocParam.rad)
                         + (Argument.er * task.getOp()/adHocParam.rad);
                 for(int i = 1 ; i <= kp ; i++){
-                    rtt += Math.pow((1 - pAd),i) * i * time;
+                    // 已经按照最新的公式进行修改
+                    rtt += Math.pow((pAd),i-1) * i * time * (1 - pAd);
                     eComp *= Math.pow((1 - pAd),i) * i;
 
                 }
@@ -200,9 +201,9 @@ public enum Strategy implements StrategyService {
                 //计算期望的能耗
                 double eComp = (adHocParam.eup * task.getIp()/adHocParam.rup)
                         + (adHocParam.edown * task.getOp()/adHocParam.rdown);
-                // TODO 原公式有问题？ kp 还是 kp-1 该
+                // 已经按照最新的公式进行修改
                 for(int i = 1 ; i <= kp ; i++){
-                    rtt += Math.pow((1 - pAd),i) * i * time;
+                    rtt += Math.pow((pAd),i-1) * i * time * (1 - pAd);
                     eComp *= Math.pow((1 - pAd),i) * i;
 
                 }
