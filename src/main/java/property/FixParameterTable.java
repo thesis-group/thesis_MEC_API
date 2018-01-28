@@ -1,4 +1,5 @@
 package property;
+
 /*
  *fix value in parameter table
  */
@@ -22,5 +23,10 @@ public class FixParameterTable {
     public static double p1 = 0;
     public static double p2 = 0;
     public static double p3 = 0;
+
+    //瑞利分布参数
+    public static double sigma = 0;
+    //节点服务率
+    public static double ps = 0;
 
 }

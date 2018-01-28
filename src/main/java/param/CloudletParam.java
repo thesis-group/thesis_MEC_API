@@ -11,6 +11,5 @@ public class CloudletParam extends RewardParam {
     public static double rUp;      //数据传输率（上传） .
     public static double rDown;    //数据传输率（下载） .
 
-    //TODO
     public static double delta;    //拥塞程度
 }

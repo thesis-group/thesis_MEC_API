@@ -18,21 +18,12 @@ public class AdHocParam extends RewardParam{
     public static double p2;       //节点左转概率 .
     public static double p3;       //节点右转概率 .
     public static double cad;      //单位处理花销 .
-
-    //TODO
-    public static double delta;    //拥塞程度
-
-    //TODO
-    public static double ps;       //服务率
-    //TODO
-    public static double sigma;    //瑞利分布参数
-    //TODO
     public static double v1;       //用户移动速度
-    //TODO
     public static double v2;       //服务节点移动速度
-    //TODO
     public static double r;        //用户通讯半径
-    //TODO
     public static double R;        //服务节点通讯半径
+    public static double ps;       //服务率
+    public static double sigma;    //瑞利分布参数
 
+    public static double delta;    //拥塞程度
 }

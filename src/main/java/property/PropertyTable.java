@@ -92,6 +92,12 @@ public class PropertyTable {
         AdHocParam.rup=VariableTable.rUp;
         AdHocParam.rdown=VariableTable.rDown;
         AdHocParam.sad=VariableTable.sAdK;
+        AdHocParam.r=VariableTable.r;
+        AdHocParam.R=VariableTable.R;
+        AdHocParam.v1=VariableTable.v1;
+        AdHocParam.v2=VariableTable.v2;
+        AdHocParam.sigma=FixParameterTable.sigma;
+        AdHocParam.ps=FixParameterTable.ps;
 
         Argument.wL1=GivenParameterTable.wL1;
         Argument.wL2=GivenParameterTable.wL2;
@@ -103,10 +109,15 @@ public class PropertyTable {
         Argument.wAD2=GivenParameterTable.wAD2;
         Argument.wAD3=GivenParameterTable.wAD3;
         Argument.sCpu=VariableTable.sCpu;
+        Argument.er=VariableTable.er;
+        Argument.fC=VariableTable.fC;
+        Argument.lambda=VariableTable.lambda;
+        Argument.epsilon=VariableTable.epsilon;
 
         LocalParam.fl=VariableTable.fl;
         LocalParam.cPen=VariableTable.cPen;
         LocalParam.eCpu=VariableTable.eCpu;
+        LocalParam.cl=VariableTable.cl;
 
         CloudletParam.fUp=VariableTable.fUp;
         CloudletParam.fDown=VariableTable.fDown;
