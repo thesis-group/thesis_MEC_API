@@ -85,8 +85,7 @@ public class VariableTable {
     //自组织网传输单位能耗
     public static double er = 0;
 
-    //一个非常小但是大于0的值 add by adhoc
-    public static double epsilon;
+
     //泊松过程参数 add by adhoc
     public static double lambda;
 }
