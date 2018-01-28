@@ -50,7 +50,7 @@ public class VariableTable {
     //the total downlink bandwidth of access point
     public static double rDown = 0;
     //Processing speed of k type nodes
-    public static double sAdK = 0;
+    public static List<Double> sAdK ;
     //transmission rate of ad hoc network
     public static double rAd = 0;
     //The unit energy consumption of data transmission

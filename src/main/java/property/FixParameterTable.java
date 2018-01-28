@@ -3,20 +3,9 @@ package property;
  *fix value in parameter table
  */
 public class FixParameterTable {
-    //The parameter in estimate the average TCS size
-    public static double aG = 0;
-    //Normal distribution parameter
-    public static double muG = 0;
-    //Normal distribution parameter
-    public static double sigmaG = 0;
-    //Average contact rate of ad hoc network
-    public static double lambdaAd = 0;
+
     //The arrival rate of Poisson process (task arrival simulation)
     public static double lambdaQ = 0;
-    //The number of node types in ad hoc network
-    public static double gamma = 0;
-    //The number of copies in ad hoc network
-    public static double alpha = 0;
     //The maximum execution time of one task
     public static double kappa = 0;
     //The number of attempts in 𝜖- greedy algorithm
