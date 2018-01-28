@@ -12,7 +12,7 @@ public class GroundMap {
      * @param zoneID
      * @return
      */
-    public boolean hasCloudlet(int zoneID){
+    public static boolean hasCloudlet(int zoneID){
         return map.get(zoneID);
     }
 
