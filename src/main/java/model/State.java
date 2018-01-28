@@ -36,7 +36,7 @@ public class State {
      */
     public State(long stateID){
         this.Z  = (int) ((stateID /50000)%20+1);
-        this.N = (int) ((stateID/1000)%50+1);
+        this.N = (int) ((stateID/1000)%50+50);
         this.V = (int) ((stateID/10)%100+1);
         this.Q = (int) (stateID%10 + 1);
 
@@ -47,7 +47,7 @@ public class State {
      * @return long
      */
     public long getStateID(){
-        return (Z-1)*50000 + (N-1) * 1000 + (V-1)*10 + Q-1;
+        return (Z-1)*50000 + (N-50) * 1000 + (V-1)*10 + Q-1;
     }
 
     @Override
