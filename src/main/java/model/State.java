@@ -3,10 +3,10 @@ package model;
 import java.util.Set;
 
 public class State {
-    int Z; //用户所在id的集合 1-20
-    int N; //q区域内连接AP的节点数 50-100
-    int V; //与用户相连的节点数 1-100
-    int Q; //队列长度 1-10
+    int Z; //用户所在id的集合 0-19
+    int N; //q区域内连接AP的节点数 50-99
+    int V; //与用户相连的节点数 0-99
+    int Q; //队列长度 0-9
 
 
     /**
@@ -35,10 +35,10 @@ public class State {
      * @param stateID
      */
     public State(long stateID){
-        this.Z  = (int) ((stateID /50000)%20+1);
+        this.Z  = (int) ((stateID /50000)%20);
         this.N = (int) ((stateID/1000)%50+50);
-        this.V = (int) ((stateID/10)%100+1);
-        this.Q = (int) (stateID%10 + 1);
+        this.V = (int) ((stateID/10)%100);
+        this.Q = (int) (stateID%10);
 
     }
 
@@ -47,7 +47,7 @@ public class State {
      * @return long
      */
     public long getStateID(){
-        return (Z-1)*50000 + (N-50) * 1000 + (V-1)*10 + Q-1;
+        return (Z)*50000 + (N-50) * 1000 + (V)*10 + Q;
     }
 
     @Override

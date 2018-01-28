@@ -55,4 +55,12 @@ public class Task {
     public void setWait(double wait) {
         this.wait = wait;
     }
+
+    public Task(int rest, int k, double wl, double ip, double op) {
+        this.rest = rest;
+        this.k = k;
+        this.wl = wl;
+        this.ip = ip;
+        this.op = op;
+    }
 }

@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 public class Result {
     //训练结果模型 （状态id -> (策略 ->  对应的reward/cost))
@@ -72,6 +73,7 @@ public class Result {
         //TODO换成配置文件中需要的内容
         List<String> lines = null;
         try {
+            //TODO change filename to the value in properties
              lines = Files.readAllLines(Paths.get("test.txt"), StandardCharsets.UTF_8);
         } catch (IOException e) {
             e.printStackTrace();
@@ -108,6 +110,9 @@ public class Result {
         return -1;
     }
 
+//
+//    public static void main(String[] args){
+//    }
 
 
 }
