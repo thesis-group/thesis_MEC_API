@@ -13,4 +13,8 @@ public class TrainingTable {
 
     public static int times;//迭代次数
     public static int algorithm;//算法种类
+
+    //训练结果信息
+    public static String resultFileName;//训练结果文件名
+    public static String resultFilePath;//训练结果文件路径
 }
