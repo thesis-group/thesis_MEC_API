@@ -10,6 +10,8 @@ public class TrainingTable {
     public static double ip; //输入数据量
     public static double op; //输出数据量
     public static double wait;//任务在队列中的等待时间
+    public static int lifespan;//生命周期
+    public static double RTT; //最长执行时间
 
     public static int times;//迭代次数
     public static int algorithm;//算法种类

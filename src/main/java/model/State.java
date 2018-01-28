@@ -55,4 +55,20 @@ public class State {
         State state = (State)obj;
         return state.getStateID() == this.getStateID();
     }
+
+    public int getZ() {
+        return Z;
+    }
+
+    public int getN() {
+        return N;
+    }
+
+    public int getV() {
+        return V;
+    }
+
+    public int getQ() {
+        return Q;
+    }
 }

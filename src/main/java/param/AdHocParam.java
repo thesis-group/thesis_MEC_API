@@ -21,6 +21,7 @@ public class AdHocParam extends RewardParam{
 
     //TODO
     public static double delta;    //拥塞程度
+
     //TODO
     public static double ps;       //服务率
     //TODO
