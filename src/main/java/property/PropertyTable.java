@@ -112,7 +112,7 @@ public class PropertyTable {
         Argument.er=VariableTable.er;
         Argument.fC=VariableTable.fC;
         Argument.lambda=VariableTable.lambda;
-        Argument.epsilon=0.000001;
+        Argument.epsilon=Double.MIN_VALUE;
 
         LocalParam.fl=VariableTable.fl;
         LocalParam.cPen=VariableTable.cPen;
