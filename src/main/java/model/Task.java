@@ -56,11 +56,12 @@ public class Task {
         this.wait = wait;
     }
 
-    public Task(int rest, int k, double wl, double ip, double op) {
+    public Task(int rest, int k, double wl, double ip, double op, double wait) {
         this.rest = rest;
         this.k = k;
         this.wl = wl;
         this.ip = ip;
         this.op = op;
+        this.wait = wait;
     }
 }
