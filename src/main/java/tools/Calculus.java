@@ -2,6 +2,7 @@ package tools;
 
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.integration.SimpsonIntegrator;
+import rl.Learning;
 
 import java.util.function.Function;
 
