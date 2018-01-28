@@ -1,21 +1,19 @@
 package property;
 
+import model.GroundMap;
 import param.AdHocParam;
 import param.Argument;
 import param.CloudletParam;
 import param.LocalParam;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 
 /**
  * 参数类，使用init方法进行配置参数的初始化
  */
 public class PropertyTable {
-    static Object[] tables = new Object[]{new VariableTable(), new FixParameterTable(), new GivenParameterTable(), new TrainingTable()};
+    static Object[] tables = new Object[]{new VariableTable(), new FixParameterTable(), new GivenParameterTable(), new TrainingTable(),new GroundMap()};
 
     /**
      * 初始化配置文件和param
@@ -27,7 +25,7 @@ public class PropertyTable {
 
     public static void main(String[] args){
         initProperty();
-        System.out.println(VariableTable.sAdK.get(0));
+        System.out.println(GroundMap.map.get(2));
     }
     /**
      * 初始化property包内的其他类
@@ -61,6 +59,13 @@ public class PropertyTable {
                                 list.add(Double.valueOf(s));
                             }
                             field.set(table,list);
+                            break;
+                        case "java.util.Map<java.lang.Integer, java.lang.Boolean>":
+                            Map<Integer,Boolean> map=new HashMap<>();
+                            String[] mapValues=resourceBundle.getString(name).split(",");
+                            for(int i=0;i<50;i++) map.put(i,false);
+                            for (String s:mapValues) map.put(Integer.valueOf(s),true);
+                            field.set(table,map);
                             break;
                         default:
                             System.out.println(type);
