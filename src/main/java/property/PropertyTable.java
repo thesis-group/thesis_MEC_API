@@ -23,10 +23,6 @@ public class PropertyTable {
         initParameters();
     }
 
-    public static void main(String[] args){
-        initProperty();
-        System.out.println(GroundMap.map.get(2));
-    }
     /**
      * 初始化property包内的其他类
      */
@@ -87,6 +83,18 @@ public class PropertyTable {
         AdHocParam.p2=FixParameterTable.p2;
         AdHocParam.p3=FixParameterTable.p3;
         AdHocParam.l=FixParameterTable.delte;
+        AdHocParam.fup=VariableTable.fUp;
+        AdHocParam.fdown=VariableTable.fDown;
+        AdHocParam.cPen=VariableTable.cPen;
+        AdHocParam.rad=VariableTable.rAd;
+        AdHocParam.cad=VariableTable.cAd;
+        AdHocParam.cCloudlet=VariableTable.cCloudlet;
+        AdHocParam.eup=VariableTable.eUp;
+        AdHocParam.edown=VariableTable.eDown;
+        AdHocParam.rup=VariableTable.rUp;
+        AdHocParam.rdown=VariableTable.rDown;
+        AdHocParam.sad=VariableTable.sAdK;
+
         Argument.wL1=GivenParameterTable.wL1;
         Argument.wL2=GivenParameterTable.wL2;
         Argument.wL3=GivenParameterTable.wL3;
@@ -96,30 +104,21 @@ public class PropertyTable {
         Argument.wAD1=GivenParameterTable.wAD1;
         Argument.wAD2=GivenParameterTable.wAD2;
         Argument.wAD3=GivenParameterTable.wAD3;
+        Argument.sCpu=VariableTable.sCpu;
 
         LocalParam.fl=VariableTable.fl;
-        CloudletParam.fUp=VariableTable.fUp;
-        AdHocParam.fup=VariableTable.fUp;
-        CloudletParam.fDown=VariableTable.fDown;
-        AdHocParam.fdown=VariableTable.fDown;
-        AdHocParam.cPen=VariableTable.cPen;
-        CloudletParam.cPen=VariableTable.cPen;
         LocalParam.cPen=VariableTable.cPen;
-        AdHocParam.rad=VariableTable.rAd;
-        AdHocParam.cad=VariableTable.cAd;
-        AdHocParam.cCloudlet=VariableTable.cCloudlet;
+        LocalParam.eCpu=VariableTable.eCpu;
+
+        CloudletParam.fUp=VariableTable.fUp;
+        CloudletParam.fDown=VariableTable.fDown;
+        CloudletParam.cPen=VariableTable.cPen;
         CloudletParam.cCloudlet=VariableTable.cCloudlet;
         CloudletParam.sCloudlet=VariableTable.sCloudlet;
-        AdHocParam.eup=VariableTable.eUp;
-        AdHocParam.edown=VariableTable.eDown;
         CloudletParam.eUp=VariableTable.eUp;
         CloudletParam.eDown=VariableTable.eDown;
-        AdHocParam.rup=VariableTable.rUp;
-        AdHocParam.rdown=VariableTable.rDown;
         CloudletParam.rUp=VariableTable.rUp;
         CloudletParam.rDown=VariableTable.rDown;
-        LocalParam.eCpu=VariableTable.eCpu;
-        Argument.sCpu=VariableTable.sCpu;
 
     }
 
