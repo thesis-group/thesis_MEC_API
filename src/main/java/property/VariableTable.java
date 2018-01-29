@@ -29,8 +29,8 @@ public class VariableTable {
     public static double op = 0;
     //The workload of 𝑡𝑖
     public static double wl = 0;
-    //The arrival time of 𝑡𝑖
-    public static double ar = 0;
+    //The lifespan of 𝑡𝑖
+    public static double lp=0;
     //The unit execution energy consumption
     public static double eCpu = 0;
     //The processing speed of local execution
@@ -53,8 +53,6 @@ public class VariableTable {
     public static List<Double> sAdK;
     //transmission rate of ad hoc network
     public static double rAd = 0;
-    //The unit energy consumption of data transmission
-    public static double eAd = 0;
     //The payment for one copy in ad hoc network
     public static double cAd = 0;
     //Local processing failure rate
