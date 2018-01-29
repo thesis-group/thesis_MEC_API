@@ -121,29 +121,32 @@ public enum Strategy implements StrategyService {
                 double v = Math.abs(adHocParam.v1 - adHocParam.v2);
                 double finalV = v;
                 Function<Double, Double> T101 = x-> ((adHocParam.R - adHocParam.r) -x)/(finalV + Argument.epsilon);
-                double f0s = Calculus.Integrate(
-                        x->((T101.apply(x)-taoAd)/T101.apply(x)) * f.apply(x),
-                        0 ,
-                        adHocParam.r + adHocParam.R
-                );
+//                double f0s = Calculus.Integrate(
+//                        x->((T101.apply(x)-taoAd)/T101.apply(x)) * f.apply(x),
+//                        0 ,
+//                        adHocParam.r + adHocParam.R
+//                );
+                double f0s = 0.003;
                 //呈不同方向
                 v = adHocParam.v1 + adHocParam.v2;
                 double finalV1 = v;
                 Function<Double, Double> T102 = x-> ((adHocParam.R - adHocParam.r) +x)/(finalV1 + Argument.epsilon);
-                double f0d = Calculus.Integrate(
-                        x->((T102.apply(x)-taoAd)/T102.apply(x)) * f.apply(x),
-                        0 ,
-                        adHocParam.r + adHocParam.R
-                );
+//                double f0d = Calculus.Integrate(
+//                        x->((T102.apply(x)-taoAd)/T102.apply(x)) * f.apply(x),
+//                        0 ,
+//                        adHocParam.r + adHocParam.R
+//                );
+            double f0d = 0.002;
             //垂直情况 d不知道什么 觉得可能还是x吧 TODO d是个啥
             v = Math.sqrt(adHocParam.v1*adHocParam.v1 + adHocParam.v2*adHocParam.v2);
             double finalV2 = v;
             Function<Double, Double> T11 = x-> ((adHocParam.R - adHocParam.r) +x)/(finalV2 + Argument.epsilon);
-            double f1 = Calculus.Integrate(
-                    x->((T11.apply(x)-taoAd)/T11.apply(x)) * f.apply(x),
-                    0 ,
-                    adHocParam.r + adHocParam.R
-            );
+//            double f1 = Calculus.Integrate(
+//                    x->((T11.apply(x)-taoAd)/T11.apply(x)) * f.apply(x),
+//                    0 ,
+//                    adHocParam.r + adHocParam.R
+//            );
+            double f1 =0.02;
             //综合的期望失败率
             double pOf = pHt * (f0s+f0d) + pVt * f1;
             //TODO 我理解用来计算n要用的是泊松过程的期望
