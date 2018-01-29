@@ -13,7 +13,7 @@ import java.util.*;
 public enum Learning implements LearningService  {
     greedy{
         public void train(){
-            long result = Result.getTrainedProcess();
+            long result = Result.getTrainedProcess()+1;
             for(long i = result ; i < 20*50*1000 ; i++){
                 trainState(i);
             }
@@ -56,7 +56,7 @@ public enum Learning implements LearningService  {
     },
     softmax{
         public void train(){
-            long result = Result.getTrainedProcess();
+            long result = Result.getTrainedProcess()+1;
             for(long i = result ; i < 20*50*1000 ; i++){
                 trainState(i);
             }
