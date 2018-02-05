@@ -1,6 +1,7 @@
 package reward;
 
 import model.Task;
+import org.apache.commons.math3.special.Erf;
 import param.*;
 import tools.Calculus;
 
@@ -24,7 +25,7 @@ public enum Strategy implements StrategyService {
             double Fsch=localParam.cPen*failureRate;
 
             //计算RTT 和 eCpu
-            double RTT=task.getWait();
+            double RTT=0.0;
             double Ecpu=localParam.eCpu;
             double temp=(1-localParam.fl)*(task.getWl()/Argument.sCpu);
             double middleValue=0;
@@ -73,7 +74,7 @@ public enum Strategy implements StrategyService {
             //计算失败惩罚
             double Fsch=cloudletParam.cPen*failureRate;
             //计算RTT
-            double RTT=task.getWait()+k_*Etime;
+            double RTT=0.0+k_*Etime;
             //计算能耗期望
             double Ecom=Eenergy*k_;
 
@@ -103,8 +104,8 @@ public enum Strategy implements StrategyService {
             double pVt = 2 * adHocParam.p1 * adHocParam.p3 + 2 * adHocParam.p1 * adHocParam.p2;
 
             //计算瑞利分布函数
-            Function<Double,Double> f =
-                    x -> (x*x/adHocParam.sigma)*Math.exp(-x*x/(2*adHocParam.sigma*adHocParam.sigma));
+//            Function<Double,Double> f =
+//                    x -> (x*x/adHocParam.sigma)*Math.exp(-x*x/(2*adHocParam.sigma*adHocParam.sigma));
 
             //通过自组织网的一次执行时间 这里原公式E_cp 就当做是E_speed了
             double taoAd = task.getIp() / adHocParam.rad
@@ -116,37 +117,41 @@ public enum Strategy implements StrategyService {
                     + task.getWl() / eSpeed
                     + adHocParam.delta *  task.getOp()/adHocParam.rdown;
 
+            double middle1 = 0.0;
+
+            middle1 = Erf.erf(1/(Math.sqrt(2)*Math.abs(AdHocParam.sigma))*(adHocParam.R + adHocParam.r))
+                    - Erf.erf(0);
             //水平情况
                 //呈同一方向  假设v1和v2都是标量
                 double v = Math.abs(adHocParam.v1 - adHocParam.v2);
-                double finalV = v;
-                Function<Double, Double> T101 = x-> ((adHocParam.R - adHocParam.r) -x)/(finalV + Argument.epsilon);
-//                double f0s = Calculus.Integrate(
-//                        x->((T101.apply(x)-taoAd)/T101.apply(x)) * f.apply(x),
-//                        0 ,
-//                        adHocParam.r + adHocParam.R
-//                );
-                double f0s = 0.003;
+                double m1 = adHocParam.R + adHocParam.r;
+                double f0s = Math.sqrt(Math.PI)*Math.pow(AdHocParam.sigma,4) * middle1
+                        - Math.pow(adHocParam.R + adHocParam.r, 2)
+                        * Math.exp(-(Math.pow(adHocParam.R + adHocParam.r, 2))/2 * adHocParam.sigma*adHocParam.sigma)
+                        + (v + Argument.epsilon) * taoAd
+                        * (Math.exp(-4) * m1 * Math.pow(adHocParam.R + adHocParam.r, 2)
+                        +Math.exp(-6)*Math.pow(adHocParam.sigma,4)*Math.pow(m1,-2)*Math.pow(adHocParam.R + adHocParam.r, 3)
+                        +0.5*Math.exp(-8)*Math.pow(m1,-1)*Math.pow(adHocParam.R + adHocParam.r, 4));
                 //呈不同方向
                 v = adHocParam.v1 + adHocParam.v2;
-                double finalV1 = v;
-                Function<Double, Double> T102 = x-> ((adHocParam.R - adHocParam.r) +x)/(finalV1 + Argument.epsilon);
-//                double f0d = Calculus.Integrate(
-//                        x->((T102.apply(x)-taoAd)/T102.apply(x)) * f.apply(x),
-//                        0 ,
-//                        adHocParam.r + adHocParam.R
-//                );
-            double f0d = 0.002;
+                double m2 = -(adHocParam.R + adHocParam.r);
+//
+                double f0d =  Math.sqrt(Math.PI)*Math.pow(AdHocParam.sigma,4) * middle1
+                        - Math.pow(adHocParam.R + adHocParam.r, 2)
+                        * Math.exp(-(Math.pow(adHocParam.R + adHocParam.r, 2))/2 * adHocParam.sigma*adHocParam.sigma)
+                        + (v + Argument.epsilon) * taoAd
+                        * (Math.exp(-4) * m2 * Math.pow(adHocParam.R + adHocParam.r, 2)
+                        +Math.exp(-6)*Math.pow(adHocParam.sigma,4)*Math.pow(m2,-2)*Math.pow(adHocParam.R + adHocParam.r, 3)
+                        +0.5*Math.exp(-8)*Math.pow(m2,-1)*Math.pow(adHocParam.R + adHocParam.r, 4));;
             //垂直情况 d不知道什么 觉得可能还是x吧 TODO d是个啥
             v = Math.sqrt(adHocParam.v1*adHocParam.v1 + adHocParam.v2*adHocParam.v2);
-            double finalV2 = v;
-            Function<Double, Double> T11 = x-> ((adHocParam.R - adHocParam.r) +x)/(finalV2 + Argument.epsilon);
-//            double f1 = Calculus.Integrate(
-//                    x->((T11.apply(x)-taoAd)/T11.apply(x)) * f.apply(x),
-//                    0 ,
-//                    adHocParam.r + adHocParam.R
-//            );
-            double f1 =0.02;
+            double f1 = Math.sqrt(Math.PI)*Math.pow(AdHocParam.sigma,4) * middle1
+                    - Math.pow(adHocParam.R + adHocParam.r, 2)
+                    * Math.exp(-(Math.pow(adHocParam.R + adHocParam.r, 2))/2 * adHocParam.sigma*adHocParam.sigma)
+                    + (v + Argument.epsilon) * taoAd
+                    * (Math.exp(-4) * m1 * Math.pow(adHocParam.R + adHocParam.r, 2)
+                    +Math.exp(-6)*Math.pow(adHocParam.sigma,4)*Math.pow(m1,-2)*Math.pow(adHocParam.R + adHocParam.r, 3)
+                    +0.5*Math.exp(-8)*Math.pow(m1,-1)*Math.pow(adHocParam.R + adHocParam.r, 4));
             //综合的期望失败率
             double pOf = pHt * (f0s+f0d) + pVt * f1;
             //TODO 我理解用来计算n要用的是泊松过程的期望
@@ -157,7 +162,6 @@ public enum Strategy implements StrategyService {
             double pCom= 1 - Math.pow((1-Argument.fC),n*adHocParam.ps);
             //卸载到其他节点的失败率
             double pAd= (pCom * (1 - pOf)+(1-pCom) *pOf)/(1-pCom*pOf);
-
             //通过接入网卸载的几率为
             double pRan = (adHocParam.fup * (1 - adHocParam.fdown) * (1 - pCom)
                     + (1 - adHocParam.fup) * adHocParam.fdown )
@@ -177,8 +181,8 @@ public enum Strategy implements StrategyService {
                 double time = taoAd;
                 int kp = (int)(task.getRest()/time);
                 double fsch = adHocParam.cPen * Math.pow(1-pAd, kp);
-                // TODO 这里需要wait？ 不需要
-                double rtt = task.getWait();
+                // TODO 这里需要wait？ 不需要!
+                double rtt = 0.0;
                 //计算期望的能耗 TODO er没放在输出 放在argument里了
                 double eComp = (Argument.er * task.getIp()/adHocParam.rad)
                         + (Argument.er * task.getOp()/adHocParam.rad);
@@ -200,7 +204,7 @@ public enum Strategy implements StrategyService {
                 int kp = (int)(task.getRest()/time);
                 double fsch = adHocParam.cPen * Math.pow(1-pRan, kp);
                 // TODO 这里需要wait？
-                double rtt = task.getWait();
+                double rtt = 0.0;
                 //计算期望的能耗
                 double eComp = (adHocParam.eup * task.getIp()/adHocParam.rup)
                         + (adHocParam.edown * task.getOp()/adHocParam.rdown);
@@ -217,6 +221,15 @@ public enum Strategy implements StrategyService {
                 return new RewardBackValue(fsch, rtt, cost);
             }
 
+        }
+
+
+        private int stage(int n){
+            int ans = 1;
+            for(int i = 2 ; i<= n; i++){
+                ans *= i;
+            }
+            return ans;
         }
 
     };
