@@ -6,21 +6,32 @@ import java.util.Random;
 
 import model.*;
 import param.*;
+import reward.*;
 
 public class Simulation {
-	public void DiaoDu(State state, double fsc, double beita, List<Task> task) {
+	public void DiaoDu(Map<Long, Map<Strategy,Double>> map, double fsc, double beita, List<Task> task, int n) {
 		List<Task> q = null; //任务队列
 		List<Task> e = null; //中转队列
 		int el = 0;//中转队列长度
 		Task tsel = null; //临时任务变量
+		State state = null;
+		double rsa = 0;
+		double fsch = 0;
+		double totalfsch = 0;
 		int a = 0;
+		int Tmax = task.size();
+		int[] per = new int[3];
+		int[] taskPosition = new int[Tmax+1];
 		
 		//构造服从指数分布的时间间隔序列Tn 
 		double lamda = 2, t = 0;
-		int Tmax = task.size();
+		Strategy str = null;
+		
 		int i = 1, rw = 1;//当前决策任务标号和到达任务的标号
-		double [] t1 = new double[Tmax];
-		double [] t2 = new double [Tmax];
+		double [] t1 = new double[Tmax+1];
+		double [] t2 = new double [Tmax+1];
+		int[] tw = new int[Tmax+1];
+		
 		t1[0] = 0;
 		//存入t1为每个任务的到达时间从下标1开始
 		while(i <= Tmax) {
@@ -29,12 +40,14 @@ public class Simulation {
 		}
 		i = 1;
 		q.add(task.get(0));	//将第一个任务直接开始存入Q进行决策
+		tw[1] = 1;
 		
 		while(!q.isEmpty()) {
 			rw++;
 			//存入e中中转
 			while(t1[rw] < t) {
 				e.add(task.get(rw));
+				tw[rw] = q.size() + e.size();//等待队列长度
 				rw++;
 			}
 			//是否需要排序，然后加入q队列，有问题需修改
@@ -51,17 +64,118 @@ public class Simulation {
 				e.remove(0);
 				el--;
 			}
+			
+			//更新state
+			
+			
 			//开始决策
-			tsel = q.get(0);
-			a = SelectAction(state,tsel);
+			tsel = q.get(0); //7
+			str = SelectAction(map, state, tsel);	//8
+			
+			fsch = carculateFsche(state, str, tsel); //9
+			rsa = Reward.getReward(state, str, tsel).getCost(); //11
+			str = null; //10
+			
+			
+			
+			if (fsch > beita)  
+				str = changeAction(state, tsel); //13-16
+			
 			t2[i] = runtime(i,a, state, tsel);
 			//删除，自增计数
-			q.remove(tsel);
-			i++;
+			q.remove(tsel);//17
+			a = getStrategy(str);
+			per[a]++; //统计
+			taskPosition[i] = a; 
+			i++;			
 			//下次决策时间
 			t = t1[i] + t2[i];
+			totalfsch += fsch;
 		}
 		return;
+	}
+
+	
+
+	
+	
+	
+	
+	private double carculateFsche(State state, Strategy str, Task tsel) {
+		double delta=1.0/state.getN();//计算拥塞程度
+
+		switch(str) {
+		case Local: 
+			return FSCH.calculateFsch0(tsel,new LocalParam());
+		case Cloudlet:
+			CloudletParam.delta=delta;
+			return FSCH.calculateFsch1(tsel,new CloudletParam());
+		case AdHoc:
+			AdHocParam.delta=delta;
+			return FSCH.calculateFsch2(tsel,new AdHocParam());
+		}
+		return 0;
+	}
+
+	private int getStrategy(Strategy str) {
+		switch(str) {
+		case Local:
+			return 0;
+		case Cloudlet:
+			return 1;
+		case AdHoc:
+			return 2;
+		}
+		return 0;
+	}
+
+	private RewardBackValue rewardR(int n) {
+		switch(n) {
+		case 0://在线
+			
+			break;
+		case 1://离线
+			
+			break;
+		}
+		return null;
+	}
+
+	private Environment enviroSimulation(Parameter para) {
+		Environment envi = null;
+		int n; //相遇的节点数
+			
+		
+		
+		
+		
+		n = 0;
+		double delta=1.0/n;//计算拥塞程度 
+				
+		
+		
+		
+		return envi;
+		
+	}
+
+	private Strategy SelectAction(Map<Long, Map<Strategy, Double>> map, State state, Task tsel) {
+		//根据格式遍历搜索
+		double min = 99999999;
+		Strategy str = Strategy.Local;
+		
+		for (Long in : map.keySet()) {
+			if(in == state.getStateID()) {
+				Map<Strategy, Double> map2 = map.get(in);
+				for(Strategy j : map2.keySet()) {
+					if(map2.get(j) < min) {
+						str = j;
+						min = map2.get(j);
+					}
+				}
+			}
+		}
+		return str;
 	}
 
 	private double runtime(int i, int a, State state, Task task) {
@@ -82,24 +196,23 @@ public class Simulation {
 		return time;
 	}
 
-	private int SelectAction(State state, Task task) {
-		FSCH fsch = null;
+	private Strategy changeAction(State state, Task tsel) {
 		double delta=1.0/state.getN();//计算拥塞程度 
-		double a =  FSCH.calculateFsch0(task,new LocalParam());
+		double a =  FSCH.calculateFsch0(tsel,new LocalParam());
 		CloudletParam.delta=delta;
-		double b =  FSCH.calculateFsch1(task,new CloudletParam());
+		double b =  FSCH.calculateFsch1(tsel,new CloudletParam());
 		AdHocParam.delta=delta;
-		double c =  FSCH.calculateFsch2(task,new AdHocParam());
+		double c =  FSCH.calculateFsch2(tsel,new AdHocParam());
 		if(a < b)
 			if(a < c)
-				return 0;
+				return Strategy.Local;
 			else
-				return 2;
+				return Strategy.AdHoc;
 		else
 			if(b < c)
-				return 1;
+				return Strategy.Cloudlet;
 			else
-				return 2;		   
+				return Strategy.AdHoc;		   
 	}
 
 	private List<Task> sortTask(List<Task> e, int el) {

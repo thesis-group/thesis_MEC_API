@@ -51,7 +51,7 @@ public class Result {
      * @param action
      */
 
-    public static  void save(Long stateID , Map<Strategy,Double>  action){
+    public static void save(Long stateID , Map<Strategy,Double>  action){
         JSONObject json = new JSONObject(action);
         String line = stateID+"->"+json.toString();
         try {
