@@ -128,14 +128,14 @@ public enum StrategyOFL implements StrategyServiceOFL {
                     x -> (x*x/adHocParam.sigma)*Math.exp(-x*x/(2*adHocParam.sigma*adHocParam.sigma));
 
             //通过自组织网的一次执行时间 这里原公式E_cp 就当做是E_speed了
-            double taoAd = task.getIp() / adHocParam.rad
-                    + task.getWl() / eSpeed
-                    + task.getOp()/adHocParam.rad;
+            double taoAd = task.getIp() / adHocParam.rad * OperatingTimes.tu
+                    + task.getWl() / eSpeed * OperatingTimes.to
+                    + task.getOp()/adHocParam.rad * OperatingTimes.td;
 
             //通过接入网的执行的一次执行时间
-            double taoRan = adHocParam.delta * task.getIp() / adHocParam.rup
-                    + task.getWl() / eSpeed
-                    + adHocParam.delta *  task.getOp()/adHocParam.rdown;
+            double taoRan = adHocParam.delta * task.getIp() / adHocParam.rup * OperatingTimes.tu
+                    + task.getWl() / eSpeed * OperatingTimes.to
+                    + adHocParam.delta *  task.getOp()/adHocParam.rdown * OperatingTimes.td;
 
             double middle1 = 0.0;
 
@@ -213,8 +213,8 @@ public enum StrategyOFL implements StrategyServiceOFL {
                 // TODO 这里需要wait？ 不需要!
                 double rtt = 0.0;
                 //计算期望的能耗 TODO er没放在输出 放在argument里了
-                double eComp = (Argument.er * task.getIp()/adHocParam.rad)
-                        + (Argument.er * task.getOp()/adHocParam.rad);
+                double eComp = (Argument.er * task.getIp()/adHocParam.rad) * OperatingTimes.tu
+                        + (Argument.er * task.getOp()/adHocParam.rad) * OperatingTimes.td;
                 for(int i = 1 ; i <= kp ; i++){
                     // 已经按照最新的公式进行修改
                     rtt += Math.pow((pAd),i-1) * i * time * (1 - pAd);
@@ -235,8 +235,8 @@ public enum StrategyOFL implements StrategyServiceOFL {
                 // TODO 这里需要wait？
                 double rtt = 0.0;
                 //计算期望的能耗
-                double eComp = (adHocParam.eup * task.getIp()/adHocParam.rup)
-                        + (adHocParam.edown * task.getOp()/adHocParam.rdown);
+                double eComp = (adHocParam.eup * task.getIp()/adHocParam.rup) * OperatingTimes.tu
+                        + (adHocParam.edown * task.getOp()/adHocParam.rdown) * OperatingTimes.td;
                 // 已经按照最新的公式进行修改
                 for(int i = 1 ; i <= kp ; i++){
                     rtt += Math.pow((pAd),i-1) * i * time * (1 - pAd);

@@ -6,6 +6,7 @@ import java.util.Random;
 
 import model.*;
 import param.*;
+import property.TrainingTable;
 import reward.*;
 import reward.offline.*;
 import rl.Learning;
@@ -17,7 +18,7 @@ public class Simulation {
 		int el = 0;//中转队列长度
 		Task tsel = null; //临时任务变量
 		State state = null;
-		double rsa = 0;
+		RewardBackValue rsa = null;
 		double fsch = 0;
 		double totalfsch = 0;
 		int a = 0;
@@ -33,6 +34,7 @@ public class Simulation {
 		int i = 1, rw = 1;//当前决策任务标号和到达任务的标号
 		double [] t1 = new double[Tmax+1];
 		double [] t2 = new double [Tmax+1];
+		double [] tcost = new double[Tmax+1];
 		int[] tw = new int[Tmax+1];
 		
 		t1[0] = 0;
@@ -83,10 +85,9 @@ public class Simulation {
 			
 			fsch = calculateFsche(state, str, tsel); //9
 			
-			rsa = rewardR(state, str, tsel, n).getCost(); //11
+			rsa = rewardR(state, str, tsel, n); //11
 			
-			Learning2.greedy.trainState(state.getStateID());
-			str = null; //10
+			str = learningA(state); //10
 			
 			if (fsch > beita)  
 				str = changeAction(state, tsel); //13-16
@@ -97,14 +98,31 @@ public class Simulation {
 			a = getStrategy(str);
 			per[a]++; //统计
 			taskPosition[i] = a; 
-			i++;			
+						
 			//下次决策时间
 			t = t1[i] + t2[i];
 			totalfsch += fsch;
+			tcost[i] = rsa.getCost();
+			
+			i++;
 		}
 		
-		SimulationOut.output(per, totalfsch, taskPosition, Tmax);
+		SimulationOut.output(per, totalfsch, taskPosition, tcost, Tmax);
 		return;
+	}
+
+	private static Strategy learningA(State state) {
+		Strategy str = null; 
+		
+		switch (TrainingTable.algorithm){
+         case 0: //贪心算法
+        	 str = Learning2.greedy.trainState(state.getStateID());
+             break;
+         case 1: //softmax算法
+        	 str = Learning2.softmax.trainState(state.getStateID());
+             break;
+     }
+		return str;
 	}
 
 	private static double calculateFsche(State state, Strategy str, Task tsel) {
@@ -289,9 +307,9 @@ public class Simulation {
 			break;
 		case 1:
 			CloudletParam.delta=delta;
-			time = task.getIp()/CloudletParam.rUp*delta*OperatingTimes.tu 
+			time = task.getIp()/CloudletParam.rUp*delta * OperatingTimes.tu 
 					+ task.getWl()/CloudletParam.sCloudlet * OperatingTimes.td
-					+ task.getOp()/CloudletParam.rDown*delta*OperatingTimes.td;
+					+ task.getOp()/CloudletParam.rDown*delta * OperatingTimes.td;
 			break;
 		case 2:
 			AdHocParam.delta=delta;

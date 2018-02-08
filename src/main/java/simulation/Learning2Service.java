@@ -1,6 +1,8 @@
 package simulation;
 
+import reward.Strategy;
+
 public interface Learning2Service {
 
-    public void trainState(Long stateID);
+    public Strategy trainState(Long stateID);
 }

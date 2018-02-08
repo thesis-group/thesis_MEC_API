@@ -12,7 +12,7 @@ import java.util.*;
 
 public enum Learning2 implements Learning2Service  {
     greedy{
-        public void trainState(Long stateID){
+        public Strategy trainState(Long stateID){
             State state = new State(stateID);
             Map<Strategy, Integer> count = new HashMap<>();
             Map<Strategy, Double> reward = new HashMap<>();
@@ -45,11 +45,12 @@ public enum Learning2 implements Learning2Service  {
         
 
             Result.save(stateID,reward);
+			return choosed;
         }
     },
     softmax{
 
-        public void trainState(Long stateID){
+        public Strategy trainState(Long stateID){
             State state = new State(stateID);
             Map<Strategy, Integer> count = new HashMap<>();
             Map<Strategy, Double> reward = new HashMap<>();
@@ -90,6 +91,7 @@ public enum Learning2 implements Learning2Service  {
           
 
             Result.save(stateID,reward);
+			return choosed;
         }
 
 

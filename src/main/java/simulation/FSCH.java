@@ -272,51 +272,18 @@ public class FSCH {
 
             // 如果选择自组织网
             if( isAd ){
-                // 一次执行时间
-                double time = taoAd;
-                int kp = (int)(task.getRest()/time);
-                double fsch = adHocParam.cPen * Math.pow(1-pAd, kp);
-                // TODO 这里需要wait？ 不需要
-                double rtt = task.getWait();
-                //计算期望的能耗 TODO er没放在输出 放在argument里了
-                double eComp = (Argument.er * task.getIp()/adHocParam.rad)
-                        + (Argument.er * task.getOp()/adHocParam.rad);
-                for(int i = 1 ; i <= kp ; i++){
-                    // 已经按照最新的公式进行修改
-                    rtt += Math.pow((pAd),i-1) * i * time * (1 - pAd);
-                    eComp *= Math.pow((1 - pAd),i) * i;
-
-                }
-                double cPay = adHocParam.cad * adHocParam.delta * (Argument.er * task.getIp()/adHocParam.rad)
-                        + (Argument.er * task.getOp()/adHocParam.rad);
-                double cost = Argument.wAD1 * eComp + Argument.wAD2 * cPay + Argument.wAD3 * fsch;
-                return fsch;
+            	taoAd = task.getIp() / adHocParam.rad *OperatingTimes.tu
+                        + task.getWl() / eSpeed *OperatingTimes.to
+                        + task.getOp()/adHocParam.rad* OperatingTimes.td;
             }
             // 如果选择接入网
             else {
-                // 一次执行时间
-                double time = taoRan;
-                int kp = (int)(task.getRest()/time);
-                double fsch = adHocParam.cPen * OperatingTimes.t;
-                // TODO 这里需要wait？
-                double rtt = task.getWait();
-                //计算期望的能耗
-                double eComp = (adHocParam.eup * task.getIp()/adHocParam.rup)
-                        + (adHocParam.edown * task.getOp()/adHocParam.rdown);
-                // 已经按照最新的公式进行修改
-                for(int i = 1 ; i <= kp ; i++){
-                    rtt += Math.pow((pAd),i-1) * i * time * (1 - pAd);
-                    eComp *= Math.pow((1 - pAd),i) * i;
-
-                }
-                double cPay = adHocParam.cad * adHocParam.delta * ((adHocParam.eup * task.getIp()/adHocParam.rup)
-                        + (adHocParam.edown * task.getOp()/adHocParam.rdown));
-
-                double cost = Argument.wAD1 * eComp + Argument.wAD2 * cPay + Argument.wAD3 * fsch;
-                return fsch;
+            	taoAd = adHocParam.delta * task.getIp() / adHocParam.rup *OperatingTimes.tu
+                        + task.getWl() / eSpeed *OperatingTimes.to
+                        + adHocParam.delta *  task.getOp()/adHocParam.rdown* OperatingTimes.td;
             }
-
-        }
+            return taoAd;
+}
 
 }      
         
