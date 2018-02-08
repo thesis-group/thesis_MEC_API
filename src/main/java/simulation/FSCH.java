@@ -82,9 +82,9 @@ public class FSCH {
                     + task.getOp()/adHocParam.rad;
 
             //通过接入网的执行的一次执行时间
-            double taoRan = adHocParam.delta * task.getIp() / adHocParam.rup
+            double taoRan = 2 * adHocParam.delta * task.getIp() / adHocParam.rup
                     + task.getWl() / eSpeed
-                    + adHocParam.delta *  task.getOp()/adHocParam.rdown;
+                    + 2 * adHocParam.delta *  task.getOp()/adHocParam.rdown;
 
             //水平情况
                 //呈同一方向  假设v1和v2都是标量

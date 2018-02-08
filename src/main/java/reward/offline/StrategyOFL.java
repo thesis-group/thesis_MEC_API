@@ -133,9 +133,9 @@ public enum StrategyOFL implements StrategyServiceOFL {
                     + task.getOp()/adHocParam.rad * OperatingTimes.td;
 
             //通过接入网的执行的一次执行时间
-            double taoRan = adHocParam.delta * task.getIp() / adHocParam.rup * OperatingTimes.tu
+            double taoRan = 2 * adHocParam.delta * task.getIp() / adHocParam.rup * OperatingTimes.tu
                     + task.getWl() / eSpeed * OperatingTimes.to
-                    + adHocParam.delta *  task.getOp()/adHocParam.rdown * OperatingTimes.td;
+                    + 2 * adHocParam.delta *  task.getOp()/adHocParam.rdown * OperatingTimes.td;
 
             double middle1 = 0.0;
 

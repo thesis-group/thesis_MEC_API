@@ -110,7 +110,7 @@ public class Simulation {
 		SimulationOut.output(per, totalfsch, taskPosition, tcost, Tmax);
 		return;
 	}
-
+	//学习
 	private static Strategy learningA(State state) {
 		Strategy str = null; 
 		
@@ -124,7 +124,7 @@ public class Simulation {
      }
 		return str;
 	}
-
+	//计算Fsche
 	private static double calculateFsche(State state, Strategy str, Task tsel) {
 		double delta=1.0/state.getN();//计算拥塞程度
 
@@ -140,7 +140,7 @@ public class Simulation {
 		}
 		return 0;
 	}
-
+	//计算reward
 	private static RewardBackValue rewardR(State state, Strategy str, Task tsel, int n) {
 		switch(n) {
 		case 0://在线
@@ -161,7 +161,7 @@ public class Simulation {
 		}
 		return null;
 	}
-
+	//部分环境模拟
 	private static Environment enviroSimulation(Parameter para) {
 		Environment envi = null;
 		envi.Z = 0;
@@ -179,7 +179,7 @@ public class Simulation {
 		return envi;
 		
 	}
-	
+	//模拟执行次数
 	private static void calculateTimes(Parameter para, Task task) {
 		Random rand = new Random();
 		int t = 1;
@@ -239,7 +239,7 @@ public class Simulation {
 		}
 		
 	}
-
+	//计算用户区域
 	private static int calculateZ(int z, double p) {
 		Random rand = new Random();
 		double r = rand.nextDouble();
@@ -257,14 +257,14 @@ public class Simulation {
 		
 		return z;
 	}
-
+	//迭代阶乘
 	public static long getNFactorial(long n){
         if(n==0){
             return 1;
         }
         return n*getNFactorial(n-1);
     }
-	
+	//选择N的大小
 	private static int selectN(double[] p, int N) {
 		 double m = 0;
 		 Random r = new Random(); //r为0至1的随机数
@@ -278,7 +278,7 @@ public class Simulation {
 		    }
 		return 0;
 	}
-
+	//选择Strategy
 	private static Strategy SelectAction(Map<Long, Map<Strategy, Double>> map, State state, Task tsel) {
 		//根据格式遍历搜索
 		double min = 99999999;
@@ -297,7 +297,7 @@ public class Simulation {
 		}
 		return str;
 	}
-
+	//计算运行时间
 	private static double runtime(int i, int a, State state, Task task) {
 		double time = 0;
 		double delta=1.0/state.getN();
@@ -317,7 +317,7 @@ public class Simulation {
 		}
 		return time;
 	}
-
+	//根据F选择Strategy
 	private static Strategy changeAction(State state, Task tsel) {
 		double delta=1.0/state.getN();//计算拥塞程度 
 		double a =  FSCH.calculateFsch0(tsel,new LocalParam());
@@ -336,7 +336,7 @@ public class Simulation {
 			else
 				return Strategy.AdHoc;		   
 	}
-
+	//排序，已经不用了
 	private static List<Task> sortTask(List<Task> e, int el) {
 		Task t = null;
 		int min = 0, m = 0;
@@ -353,7 +353,7 @@ public class Simulation {
 		}
 		return e;		
 	}
-	
+	//泊松过程模拟
 	private static double RandExp(double lamda) {
         Random rand = new Random();
         double p ;
@@ -370,7 +370,7 @@ public class Simulation {
         randres = -temp * Math.log(temp * p);
         return randres;
     }
-	
+	//泊松随机
 	private static int getPossionVariable(double lamda) {  
         int x = 0;  
         double y = Math.random(), cdf = getPossionProbability(x, lamda);  
@@ -380,7 +380,7 @@ public class Simulation {
         }  
         return x;  
     }  
-  
+	//概率
     private static double getPossionProbability(int k, double lamda) {  
         double c = Math.exp(-lamda), sum = 1;  
         for (int i = 1; i <= k; i++) {  
@@ -388,7 +388,7 @@ public class Simulation {
         }  
         return sum * c;  
     }  
-	
+	//变Strategy为数字
     private static int getStrategy(Strategy str) {
 		switch(str) {
 		case Local:

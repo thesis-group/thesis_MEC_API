@@ -112,9 +112,9 @@ public enum Strategy implements StrategyService {
                     + task.getOp()/adHocParam.rad;
 
             //通过接入网的执行的一次执行时间
-            double taoRan = adHocParam.delta * task.getIp() / adHocParam.rup
+            double taoRan = 2 * adHocParam.delta * task.getIp() / adHocParam.rup
                     + task.getWl() / eSpeed
-                    + adHocParam.delta *  task.getOp()/adHocParam.rdown;
+                    + 2 * adHocParam.delta *  task.getOp() / adHocParam.rdown;
 
             double middle1 = 0.0;
 
