@@ -99,7 +99,7 @@ public class Result {
      * 用于恢复训练
      * @return 之前训练的ID进度
      */
-    public static long  getTrainedProcess(){
+    public static long getTrainedProcess(){
         List<String> lines = null;
         try {
             lines = Files.readAllLines(Paths.get("test.txt"), StandardCharsets.UTF_8);

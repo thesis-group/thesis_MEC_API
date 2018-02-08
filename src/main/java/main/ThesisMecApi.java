@@ -3,12 +3,14 @@ package main;
 import property.PropertyTable;
 import property.TrainingTable;
 import rl.Learning;
+import simulation.*;
 
 public class ThesisMecApi {
     public static void main(String[] args) {
         PropertyTable.init();
         train();
         //TODO 调用调度方法
+        SimulationsInput.simulationStart();
     }
 
     public static void train(){

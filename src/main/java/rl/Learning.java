@@ -33,8 +33,8 @@ public enum Learning implements LearningService  {
                 // 选择那个一个action
                 if(random.nextDouble() < TrainParam.epsilon){
                     choosed = possibleAction.get(random.nextInt(possibleAction.size()));
-                }else{
-                    double  cost = 200000.0;
+                }else{ 
+                    double cost = 200000.0;
                     for(Strategy s : possibleAction){
                         if(reward.get(s) < cost){
                             cost = reward.get(s);

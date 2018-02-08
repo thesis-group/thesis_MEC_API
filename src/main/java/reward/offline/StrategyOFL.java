@@ -1,18 +1,23 @@
-package reward;
+package reward.offline;
 
 import model.Task;
 import param.*;
 import tools.Calculus;
 
+import java.util.Random;
 import java.util.function.Function;
+import reward.*;
 
-public enum Strategy implements StrategyService {
+public enum StrategyOFL implements StrategyServiceOFL {
     // 本地卸载
     Local {
         public RewardBackValue calculateReward(Task task, RewardParam param) {
             assert param instanceof LocalParam : "param do not instance of LocalParam";
             LocalParam localParam = (LocalParam)param;
 
+            int t = 1;
+            Random rand = new Random();
+            
             //计算可执行次数k_
             int k_=(int)(task.getRest()/(task.getWl()/Argument.sCpu));
             k_=k_>task.getK()?task.getK():k_;
@@ -20,12 +25,19 @@ public enum Strategy implements StrategyService {
             //计算失误率
             double failureRate=Math.pow(localParam.fl,k_);
 
+            while(true) {
+				if(rand.nextDouble()> localParam.fl) {
+					break;
+				}
+				t++;
+			}
+            
             //计算失误惩罚
-            double Fsch=localParam.cPen*failureRate;
+            double Fsch=localParam.cPen*(t - 1);
 
             //计算RTT 和 eCpu
             double RTT=0.0;
-            double Ecpu=localParam.eCpu;
+            double Ecpu=localParam.eCpu* t ;
             double temp=(1-localParam.fl)*(task.getWl()/Argument.sCpu);
             double middleValue=0;
             for(int i=1;i<=k_;i++){
@@ -35,7 +47,7 @@ public enum Strategy implements StrategyService {
             Ecpu*=middleValue;
 
             //计算执行花销
-            double Csch=(task.getWl()/Argument.sCpu)*localParam.cl;
+            double Csch=(task.getWl()/Argument.sCpu)*localParam.cl*t;
 
             //计算代价
             double cost=Argument.wL1*Ecpu+Argument.wL2*Csch+Argument.wL3*Fsch;
@@ -51,34 +63,59 @@ public enum Strategy implements StrategyService {
             assert param instanceof CloudletParam : "param do not instance of CloudletParam";
             CloudletParam cloudletParam = (CloudletParam)param;
 
+            int t = 1;
+            int tu = 1, td = 1;
+            Random rand = new Random();
+            
             //计算上行传输错误概率
             double pUp=cloudletParam.fUp*(1-cloudletParam.fDown)/(1-cloudletParam.fUp*cloudletParam.fDown);
             //计算下行传输错误概率
             double pDown=cloudletParam.fDown*(1-cloudletParam.fUp)/(1-cloudletParam.fUp*cloudletParam.fDown);
             //计算任务一次尝试执行的期望时间
             double Etime=pUp*(task.getIp()/cloudletParam.rUp)*cloudletParam.delta+(1-pUp)*((task.getIp()/cloudletParam.rUp)*cloudletParam.delta+task.getWl()/cloudletParam.sCloudlet+(task.getOp()/cloudletParam.rDown)*cloudletParam.delta);
-
+            
             //计算可执行次数k_
             int k_=(int)(task.getRest()/Etime);
             k_=k_>task.getK()?task.getK():k_;
-
+            
+            
             //计算期望能耗
-            double Eenergy=cloudletParam.eUp*(task.getIp()/cloudletParam.rUp)*cloudletParam.delta+(1-pUp)*(cloudletParam.eUp*(task.getIp()/cloudletParam.rUp)*cloudletParam.delta+task.getWl()/cloudletParam.sCloudlet+cloudletParam.eDown*(task.getOp()/cloudletParam.rDown)*cloudletParam.delta);
-
+            /*double Eenergy=cloudletParam.eUp*(task.getIp()/cloudletParam.rUp)*cloudletParam.delta
+            		+(1-pUp)*(cloudletParam.eUp*(task.getIp()/cloudletParam.rUp)*cloudletParam.delta
+            		+task.getWl()/cloudletParam.sCloudlet
+            		+cloudletParam.eDown*(task.getOp()/cloudletParam.rDown)*cloudletParam.delta);
+            */
+            double Energy = pUp*task.getIp()/cloudletParam.rUp*cloudletParam.delta
+            		+pDown * task.getOp()/cloudletParam.rDown*cloudletParam.delta; 
+            double Energy1 = pUp*task.getIp()/cloudletParam.rUp*cloudletParam.delta;
+            
             //计算卸载到薄云的故障率
             double pCloudlet=(cloudletParam.fUp*(1-cloudletParam.fDown)+cloudletParam.fDown*(1-cloudletParam.fUp))/(1-cloudletParam.fUp*cloudletParam.fDown);
 
             //计算失败率
             double failureRate=Math.pow(pCloudlet,k_);
+            
+            while(true) {
+				if(rand.nextDouble() > cloudletParam.fUp)
+					if(rand.nextDouble() > cloudletParam.fDown)
+						break;
+					else {
+						tu++;
+						td++;
+					}
+				else tu++;
+				t++;
+			}
+            
             //计算失败惩罚
-            double Fsch=cloudletParam.cPen*failureRate;
+            double Fsch=cloudletParam.cPen*t;
             //计算RTT
             double RTT=0.0+k_*Etime;
             //计算能耗期望
-            double Ecom=Eenergy*k_;
+            double Ecom=Energy1*(tu - 1) + Energy * td;
 
             //计算支付
-            double Cpay=cloudletParam.cCloudlet*task.getWl()/cloudletParam.sCloudlet;
+            double Cpay=cloudletParam.cCloudlet*task.getWl()/cloudletParam.sCloudlet * td;
 
             //计算代价
             double cost=Argument.wCL1*Ecom+Argument.wCL2*Cpay+Argument.wCL3*Fsch;
@@ -174,6 +211,15 @@ public enum Strategy implements StrategyService {
             //是否选择自组织网 //TODO 分母一样就不要了？
             boolean isAd = taoAd * pAd < taoRan * pRan;
 
+            int t = 1;
+            Random rand = new Random();
+            /*while(true) {
+				if(rand.nextDouble() > adHocParam.ft)
+					if(rand.nextDouble() > adHocParam.fad)
+						if(rand.nextDouble() > adHocParam.ft)
+							return t;
+				t++;
+			}*/
             // 如果选择自组织网
             if( isAd ){
                 // 一次执行时间

@@ -7,9 +7,10 @@ import java.util.Random;
 import model.*;
 import param.*;
 import reward.*;
+import reward.offline.*;
 
 public class Simulation {
-	public void DiaoDu(Map<Long, Map<Strategy,Double>> map, double fsc, double beita, List<Task> task, int n) {
+	public static void DiaoDu(Map<Long, Map<Strategy,Double>> map, double beita, List<Task> task, int n) {
 		List<Task> q = null; //任务队列
 		List<Task> e = null; //中转队列
 		int el = 0;//中转队列长度
@@ -22,6 +23,7 @@ public class Simulation {
 		int Tmax = task.size();
 		int[] per = new int[3];
 		int[] taskPosition = new int[Tmax+1];
+		Parameter para = new Parameter();
 		
 		//构造服从指数分布的时间间隔序列Tn 
 		double lamda = 2, t = 0;
@@ -39,6 +41,16 @@ public class Simulation {
 			i++;
 		}
 		i = 1;
+		
+		/*
+		while(i <= 50) {
+			t1[i] = RandExp(lamda) + t1[i - 1];
+			i++;
+		}
+		*/
+		
+		
+		i = 1;
 		q.add(task.get(0));	//将第一个任务直接开始存入Q进行决策
 		tw[1] = 1;
 		
@@ -53,7 +65,7 @@ public class Simulation {
 			//是否需要排序，然后加入q队列，有问题需修改
 			if(!e.isEmpty()) {
 				if(el > 1) {
-					e = sortTask(e,el);
+					//e = sortTask(e,el);
 					while(el != 0) {
 						q.add(e.get(0));
 						e.remove(0);
@@ -65,18 +77,21 @@ public class Simulation {
 				el--;
 			}
 			
-			//更新state
+			//环境模拟
+			Environment envi = enviroSimulation(para);
 			
+			//更新state
+			state = new State(envi.Z, 50, envi.N, tw[i]);
 			
 			//开始决策
 			tsel = q.get(0); //7
 			str = SelectAction(map, state, tsel);	//8
 			
-			fsch = carculateFsche(state, str, tsel); //9
-			rsa = Reward.getReward(state, str, tsel).getCost(); //11
+			fsch = calculateFsche(state, str, tsel); //9
+			
+			rsa = rewardR(state, str, tsel, n).getCost(); //11
+			
 			str = null; //10
-			
-			
 			
 			if (fsch > beita)  
 				str = changeAction(state, tsel); //13-16
@@ -92,16 +107,12 @@ public class Simulation {
 			t = t1[i] + t2[i];
 			totalfsch += fsch;
 		}
+		
+		SimulationOut.output(per, totalfsch, taskPosition, Tmax);
 		return;
 	}
 
-	
-
-	
-	
-	
-	
-	private double carculateFsche(State state, Strategy str, Task tsel) {
+	private static double calculateFsche(State state, Strategy str, Task tsel) {
 		double delta=1.0/state.getN();//计算拥塞程度
 
 		switch(str) {
@@ -117,49 +128,114 @@ public class Simulation {
 		return 0;
 	}
 
-	private int getStrategy(Strategy str) {
-		switch(str) {
-		case Local:
-			return 0;
-		case Cloudlet:
-			return 1;
-		case AdHoc:
-			return 2;
-		}
-		return 0;
-	}
-
-	private RewardBackValue rewardR(int n) {
+	private static RewardBackValue rewardR(State state, Strategy str, Task tsel, int n) {
 		switch(n) {
 		case 0://在线
-			
-			break;
+			return Reward.getReward(state, str, tsel);
 		case 1://离线
-			
-			break;
+			StrategyOFL strr = null;
+			switch(str) {
+			case Local:
+				strr = StrategyOFL.Local;
+				break;
+			case Cloudlet:
+				strr = StrategyOFL.Cloudlet;
+				break;
+			case AdHoc:
+				strr = StrategyOFL.AdHoc;
+			}
+			return RewardOFL.getReward(state, strr, tsel);
 		}
 		return null;
 	}
 
-	private Environment enviroSimulation(Parameter para) {
+	private static Environment enviroSimulation(Parameter para) {
 		Environment envi = null;
+		envi.Z = 0;
 		int n; //相遇的节点数
-			
+		double[] p	= new double[100];
+		envi.Z = calculateZ(envi.Z, para.p);
 		
-		
-		
-		
-		n = 0;
-		double delta=1.0/n;//计算拥塞程度 
+		for(double i = 0; i < 100; i++) {
+			p[(int) i] = Math.pow(Math.E, -1.5*Math.pow(3, 0.5)*Math.pow(para.a,2))*Math.pow(1.5*Math.pow(3, 0.5)*Math.pow(para.a,2)*para.lamdac, i)/ getNFactorial((long)i);
+		}
+		envi.N = selectN(p,99); //计算N 
 				
-		
-		
+		//envi.times = calculateTimes(para);
 		
 		return envi;
 		
 	}
+	
+	/*private int calculateTimes(Parameter para) {
+		Random rand = new Random();
+		int t = 0;
+		switch(para.str) {
+		case Local:
+			while(true) {
+				if(rand.nextDouble()> para.fl)
+					return t;
+				t++;
+			}
+		case Cloudlet:
+			while(true) {
+				if(rand.nextDouble() > para.fup)
+					if(rand.nextDouble() > para.fdown)
+						return t;
+				t++;
+			}
+		case AdHoc:
+			while(true) {
+				if(rand.nextDouble() > para.ft)
+					if(rand.nextDouble() > para.fad)
+						if(rand.nextDouble() > para.ft)
+							return t;
+				t++;
+			}
+		}
+		return 1;
+	}*/
 
-	private Strategy SelectAction(Map<Long, Map<Strategy, Double>> map, State state, Task tsel) {
+	private static int calculateZ(int z, double p) {
+		Random rand = new Random();
+		double r = rand.nextDouble();
+		if(r > p)
+			return z;
+		
+		for(int i = 1; i < 20; i++) {
+			if(r <= p * (double)i / 19.0) {
+				z = z + i;
+				break;
+			}
+		}
+		
+		if(z > 19) z = z - 20;
+		
+		return z;
+	}
+
+	public static long getNFactorial(long n){
+        if(n==0){
+            return 1;
+        }
+        return n*getNFactorial(n-1);
+    }
+	
+	private static int selectN(double[] p, int N) {
+		 double m = 0;
+		 Random r = new Random(); //r为0至1的随机数
+		 double t = r.nextDouble();
+		 for (int i = 0; i <= N; i++) {
+		    /**
+		     * 产生的随机数在m~m+P[i]间则认为选中了i，因此i被选中的概率是P[i]
+		     */
+		        m = m + p[i];
+		        if (t <= m) return i;
+		    }
+		return 0;
+	}
+
+	private static Strategy SelectAction(Map<Long, Map<Strategy, Double>> map, State state, Task tsel) {
 		//根据格式遍历搜索
 		double min = 99999999;
 		Strategy str = Strategy.Local;
@@ -178,7 +254,7 @@ public class Simulation {
 		return str;
 	}
 
-	private double runtime(int i, int a, State state, Task task) {
+	private static double runtime(int i, int a, State state, Task task) {
 		double time = 0;
 		double delta=1.0/state.getN();
 		switch(a) {
@@ -196,7 +272,7 @@ public class Simulation {
 		return time;
 	}
 
-	private Strategy changeAction(State state, Task tsel) {
+	private static Strategy changeAction(State state, Task tsel) {
 		double delta=1.0/state.getN();//计算拥塞程度 
 		double a =  FSCH.calculateFsch0(tsel,new LocalParam());
 		CloudletParam.delta=delta;
@@ -215,7 +291,7 @@ public class Simulation {
 				return Strategy.AdHoc;		   
 	}
 
-	private List<Task> sortTask(List<Task> e, int el) {
+	private static List<Task> sortTask(List<Task> e, int el) {
 		Task t = null;
 		int min = 0, m = 0;
 		for(int i = 0; i < el; i++) {
@@ -249,6 +325,16 @@ public class Simulation {
         return randres;
     }
 	
-	
+	private static int getStrategy(Strategy str) {
+		switch(str) {
+		case Local:
+			return 0;
+		case Cloudlet:
+			return 1;
+		case AdHoc:
+			return 2;
+		}
+		return 0;
+	}
 }
 
