@@ -3,7 +3,7 @@ package simulation;
 import reward.Strategy;
 
 public class Parameter {
-	//简便起见就不封装了
+	
 	double fl;
 	double fup;
 	double fdown;
@@ -11,7 +11,7 @@ public class Parameter {
 	double fad;
 	double ps;
 	double lamdan;
-	double lamdap;
+	double lamdaq;
 	double lamdac;
 	double a;
 	double p;

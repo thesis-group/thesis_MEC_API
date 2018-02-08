@@ -7,6 +7,7 @@ import tools.Calculus;
 import java.util.Random;
 import java.util.function.Function;
 import reward.*;
+import simulation.OperatingTimes;
 
 public enum StrategyOFL implements StrategyServiceOFL {
     // 本地卸载
@@ -25,19 +26,12 @@ public enum StrategyOFL implements StrategyServiceOFL {
             //计算失误率
             double failureRate=Math.pow(localParam.fl,k_);
 
-            while(true) {
-				if(rand.nextDouble()> localParam.fl) {
-					break;
-				}
-				t++;
-			}
-            
             //计算失误惩罚
-            double Fsch=localParam.cPen*(t - 1);
+            double Fsch=localParam.cPen*(OperatingTimes.t - 1);
 
             //计算RTT 和 eCpu
             double RTT=0.0;
-            double Ecpu=localParam.eCpu* t ;
+            double Ecpu=localParam.eCpu*OperatingTimes.t ;
             double temp=(1-localParam.fl)*(task.getWl()/Argument.sCpu);
             double middleValue=0;
             for(int i=1;i<=k_;i++){
@@ -47,7 +41,7 @@ public enum StrategyOFL implements StrategyServiceOFL {
             Ecpu*=middleValue;
 
             //计算执行花销
-            double Csch=(task.getWl()/Argument.sCpu)*localParam.cl*t;
+            double Csch=(task.getWl()/Argument.sCpu)*localParam.cl*OperatingTimes.t;
 
             //计算代价
             double cost=Argument.wL1*Ecpu+Argument.wL2*Csch+Argument.wL3*Fsch;
@@ -95,17 +89,7 @@ public enum StrategyOFL implements StrategyServiceOFL {
             //计算失败率
             double failureRate=Math.pow(pCloudlet,k_);
             
-            while(true) {
-				if(rand.nextDouble() > cloudletParam.fUp)
-					if(rand.nextDouble() > cloudletParam.fDown)
-						break;
-					else {
-						tu++;
-						td++;
-					}
-				else tu++;
-				t++;
-			}
+       
             
             //计算失败惩罚
             double Fsch=cloudletParam.cPen*t;

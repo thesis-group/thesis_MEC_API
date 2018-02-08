@@ -8,6 +8,7 @@ import model.*;
 import param.*;
 import reward.*;
 import reward.offline.*;
+import rl.Learning;
 
 public class Simulation {
 	public static void DiaoDu(Map<Long, Map<Strategy,Double>> map, double beita, List<Task> task, int n) {
@@ -37,20 +38,11 @@ public class Simulation {
 		t1[0] = 0;
 		//存入t1为每个任务的到达时间从下标1开始
 		while(i <= Tmax) {
-			t1[i] = RandExp(lamda) + t1[i - 1];
+			t1[i] = RandExp(para.lamdaq) + t1[i - 1];
 			i++;
 		}
 		i = 1;
-		
-		/*
-		while(i <= 50) {
-			t1[i] = RandExp(lamda) + t1[i - 1];
-			i++;
-		}
-		*/
-		
-		
-		i = 1;
+	
 		q.add(task.get(0));	//将第一个任务直接开始存入Q进行决策
 		tw[1] = 1;
 		
@@ -79,18 +71,21 @@ public class Simulation {
 			
 			//环境模拟
 			Environment envi = enviroSimulation(para);
+			calculateTimes(para, tsel);
 			
 			//更新state
-			state = new State(envi.Z, 50, envi.N, tw[i]);
+			state = new State(envi.Z, getPossionVariable(para.lamdan), envi.N, tw[i]);
 			
 			//开始决策
 			tsel = q.get(0); //7
+			
 			str = SelectAction(map, state, tsel);	//8
 			
 			fsch = calculateFsche(state, str, tsel); //9
 			
 			rsa = rewardR(state, str, tsel, n).getCost(); //11
 			
+			Learning2.greedy.trainState(state.getStateID());
 			str = null; //10
 			
 			if (fsch > beita)  
@@ -167,34 +162,65 @@ public class Simulation {
 		
 	}
 	
-	/*private int calculateTimes(Parameter para) {
+	private static void calculateTimes(Parameter para, Task task) {
 		Random rand = new Random();
-		int t = 0;
+		int t = 1;
+		int tu = 1;
+		int to = 1;
+		int td = 1;
 		switch(para.str) {
 		case Local:
 			while(true) {
 				if(rand.nextDouble()> para.fl)
-					return t;
+					break;
 				t++;
+				if(t == task.getK()) break;
 			}
+			OperatingTimes.t = t;
 		case Cloudlet:
 			while(true) {
 				if(rand.nextDouble() > para.fup)
 					if(rand.nextDouble() > para.fdown)
-						return t;
+						break;
+					else {
+						tu++;
+						td++;
+					}
+				else tu++;
 				t++;
+				if(t == task.getK()) break;
 			}
+			OperatingTimes.t = t;
+			OperatingTimes.tu = tu;
+			OperatingTimes.td = td;
 		case AdHoc:
 			while(true) {
 				if(rand.nextDouble() > para.ft)
 					if(rand.nextDouble() > para.fad)
 						if(rand.nextDouble() > para.ft)
-							return t;
+							break;
+						else {
+							tu++;
+							to++;
+							td++;
+						}
+					else {
+						tu++;
+						to++;
+					}
+				else {
+					tu++;
+				}
 				t++;
+				if(t == task.getK()) break;	
 			}
+			OperatingTimes.t = t;
+			OperatingTimes.tu = tu;
+			OperatingTimes.to = to;
+			OperatingTimes.td = td;
 		}
-		return 1;
-	}*/
+		
+	}
 
 	private static int calculateZ(int z, double p) {
 		Random rand = new Random();
@@ -259,15 +285,17 @@ public class Simulation {
 		double delta=1.0/state.getN();
 		switch(a) {
 		case 0:
-			FSCH.calculateTime0(task,new LocalParam());
+			time = task.getWl()/Argument.sCpu * OperatingTimes.t;
 			break;
 		case 1:
 			CloudletParam.delta=delta;
-			FSCH.calculateTime1(task,new CloudletParam());
+			time = task.getIp()/CloudletParam.rUp*delta*OperatingTimes.tu 
+					+ task.getWl()/CloudletParam.sCloudlet * OperatingTimes.td
+					+ task.getOp()/CloudletParam.rDown*delta*OperatingTimes.td;
 			break;
 		case 2:
 			AdHocParam.delta=delta;
-			FSCH.calculateTime2(task,new AdHocParam());
+			time = FSCH.calculateTime(task,new AdHocParam());
 		}
 		return time;
 	}
@@ -325,7 +353,25 @@ public class Simulation {
         return randres;
     }
 	
-	private static int getStrategy(Strategy str) {
+	private static int getPossionVariable(double lamda) {  
+        int x = 0;  
+        double y = Math.random(), cdf = getPossionProbability(x, lamda);  
+        while (cdf < y) {  
+            x++;  
+            cdf += getPossionProbability(x, lamda);  
+        }  
+        return x;  
+    }  
+  
+    private static double getPossionProbability(int k, double lamda) {  
+        double c = Math.exp(-lamda), sum = 1;  
+        for (int i = 1; i <= k; i++) {  
+            sum *= lamda / i;  
+        }  
+        return sum * c;  
+    }  
+	
+    private static int getStrategy(Strategy str) {
 		switch(str) {
 		case Local:
 			return 0;

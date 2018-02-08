@@ -22,7 +22,7 @@ public class FSCH {
             double failureRate=Math.pow(localParam.fl,k_);
 
             //计算失误惩罚
-            double Fsch=localParam.cPen*failureRate;
+            double Fsch=localParam.cPen*(OperatingTimes.t-1);
             //返回值
             return Fsch;
         }
@@ -53,7 +53,7 @@ public class FSCH {
             //计算失败率
             double failureRate=Math.pow(pCloudlet,k_);
             //计算失败惩罚
-            double Fsch=cloudletParam.cPen*failureRate;
+            double Fsch=cloudletParam.cPen * OperatingTimes.t;
             //返回值
             return Fsch;
         }
@@ -168,7 +168,7 @@ public class FSCH {
                 // 一次执行时间
                 double time = taoRan;
                 int kp = (int)(task.getRest()/time);
-                double fsch = adHocParam.cPen * Math.pow(1-pRan, kp);
+                double fsch = adHocParam.cPen * OperatingTimes.t;
                 // TODO 这里需要wait？
                 double rtt = task.getWait();
                 //计算期望的能耗
@@ -189,33 +189,7 @@ public class FSCH {
 
         }
 
-        
-        
-        
-     // 本地卸载
-        
-        public static double calculateTime0(Task task, RewardParam param) {
-            assert param instanceof LocalParam : "param do not instance of LocalParam";
-            LocalParam localParam = (LocalParam)param;
-
-            //返回值
-            return 0;
-        }
-   
-    // 薄云卸载
-   
-        public static double calculateTime1(Task task, RewardParam param) {
-            assert param instanceof CloudletParam : "param do not instance of CloudletParam";
-            CloudletParam cloudletParam = (CloudletParam)param;
-
-           
-            //返回值
-            return 0;
-        }
-    
-    // 自组织网卸载
-    
-        public static double calculateTime2(Task task, RewardParam param) {
+        public static double calculateTime(Task task, RewardParam param) {
             assert param instanceof AdHocParam : "param do not instance of AdHocParam";
             AdHocParam adHocParam = (AdHocParam)param;
             // 假设 该参数不为空
@@ -323,7 +297,7 @@ public class FSCH {
                 // 一次执行时间
                 double time = taoRan;
                 int kp = (int)(task.getRest()/time);
-                double fsch = adHocParam.cPen * Math.pow(1-pRan, kp);
+                double fsch = adHocParam.cPen * OperatingTimes.t;
                 // TODO 这里需要wait？
                 double rtt = task.getWait();
                 //计算期望的能耗
@@ -343,5 +317,8 @@ public class FSCH {
             }
 
         }
-	
-}
+
+}      
+        
+        
+  
