@@ -12,7 +12,7 @@ public class SimulationsInput {
 		List<Task> task = new ArrayList<Task>(); 
 		
 		try {
-		String pathname = "D:\\Task.txt";
+		String pathname = "./Task.txt";
 		File filename = new File(pathname);
 		InputStreamReader reader = new InputStreamReader(  
                 new FileInputStream(filename)); // 建立一个输入流对象reader  

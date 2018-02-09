@@ -1,6 +1,7 @@
 package simulation;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -11,6 +12,7 @@ import property.TrainingTable;
 import reward.*;
 import reward.offline.*;
 import rl.Learning;
+import tools.ActionFilter;
 
 public class Simulation {
 	public static void DiaoDu(Map<Long, Map<Strategy,Double>> map, double beita, List<Task> task, int n) {
@@ -33,9 +35,10 @@ public class Simulation {
 		Strategy str = null;
 		
 		int i = 1, rw = 1;//当前决策任务标号和到达任务的标号
-		double [] t1 = new double[Tmax+1];
-		double [] t2 = new double [Tmax+1];
+		double [] t1 = new double[Tmax+2];
+		double [] t2 = new double [Tmax+2];
 		double [] tcost = new double[Tmax+1];
+		double [] tfail = new double[Tmax+1];
 		int[] tw = new int[Tmax+1];
 		
 		t1[0] = 0;
@@ -48,32 +51,35 @@ public class Simulation {
 	
 		q.add(task.get(0));	//将第一个任务直接开始存入Q进行决策
 		tw[1] = 1;
+		rw++;
 		
-		while(!q.isEmpty()) {
-			rw++;
+		List<Environment> environment = new ArrayList<>();
+		for(int j = 0; j < Tmax; j++) {
+			environment.add(enviroSimulation(para));
+		}
+		
+		//调度算法
+		initialcount();
+		while(i<=Tmax) {
 			//存入e中中转
-			while(t1[rw] < t) {
-				e.add(task.get(rw));
+			while(t1[rw] < t&&t1[rw]!=0) {
+				e.add(task.get(rw-1));
+				el++;
 				tw[rw] = q.size() + e.size();//等待队列长度
 				rw++;
 			}
 			//是否需要排序，然后加入q队列，有问题需修改
 			if(!e.isEmpty()) {
-				if(el > 1) {
-					//e = sortTask(e,el);
-					while(el != 0) {
-						q.add(e.get(0));
-						e.remove(0);
-						el--;
-					}
+				while(el != 0) {
+					q.add(e.get(0));
+					e.remove(0);
+					el--;
 				}
-				q.add(e.get(0));
-				e.remove(0);
-				el--;
 			}
 			
-			//环境模拟
-			Environment envi = enviroSimulation(para);
+			//环境模拟载入
+			Environment envi = environment.get(i-1);
+			//执行次数模拟
 			calculateTimes(para, tsel);
 			
 			//更新state
@@ -104,13 +110,148 @@ public class Simulation {
 			t = t1[i] + t2[i];
 			totalfsch += fsch;
 			tcost[i] = rsa.getCost();
-			
+			tfail[i] = rsa.getFailureRate();
 			i++;
 		}
 		
-		SimulationOut.output(per, totalfsch, taskPosition, tcost, Tmax);
-		return;
+		SimulationOut.output(per, totalfsch, taskPosition, tcost, tfail, Tmax, 0);
+		
+		//greedy
+		while(i<=Tmax) {
+			//存入e中中转
+			while(t1[rw] < t&&t1[rw]!=0) {
+				e.add(task.get(rw-1));
+				el++;
+				tw[rw] = q.size() + e.size();//等待队列长度
+				rw++;
+			}
+			//是否需要排序，然后加入q队列，有问题需修改
+			if(!e.isEmpty()) {
+				while(el != 0) {
+					q.add(e.get(0));
+					e.remove(0);
+					el--;
+				}
+			}
+			
+			//环境模拟载入
+			Environment envi = environment.get(i-1);
+			//执行次数模拟
+			calculateTimes(para, tsel);
+			
+			//更新state
+			state = new State(envi.Z, getPossionVariable(para.lamdan), envi.N, tw[i]);
+			
+			//开始决策
+			tsel = q.get(0); //7
+
+			if(para.x == 0) //在线 
+			{			
+				switch(para.n) {
+				case 0://reward
+					str = SelectAction(map, state, tsel);
+					break;
+				case 1: //fsch
+					str = SelectAction2(map, state, tsel);
+				}
+			}else {
+				switch(para.n) //离线
+				{
+				case 0://reward
+					str = SelectAction3(map, state, tsel);
+					break;
+				case 1: //fsch
+					str = changeAction(state, tsel);
+				}
+			}
+				
+			
+			t2[i] = runtime(i,a, state, tsel);
+			//删除，自增计数
+			q.remove(tsel);//17
+			a = getStrategy(str);
+			per[a]++; //统计
+			taskPosition[i] = a; 
+						
+			//下次决策时间
+			t = t1[i] + t2[i];
+			totalfsch += fsch;
+			tcost[i] = rsa.getCost();
+			tfail[i] = rsa.getFailureRate();
+			i++;
+		}
+		SimulationOut.output(per, totalfsch, taskPosition, tcost, tfail, Tmax, 1);
+		
+		//random
+		while(i<=Tmax) {
+		//存入e中中转
+			while(t1[rw] < t&&t1[rw]!=0) {
+						e.add(task.get(rw-1));
+						el++;
+						tw[rw] = q.size() + e.size();//等待队列长度
+						rw++;
+					}
+					//是否需要排序，然后加入q队列，有问题需修改
+					if(!e.isEmpty()) {
+						while(el != 0) {
+							q.add(e.get(0));
+							e.remove(0);
+							el--;
+						}
+					}
+					
+					//环境模拟载入
+					Environment envi = environment.get(i-1);
+					//执行次数模拟
+					calculateTimes(para, tsel);
+					
+					//更新state
+					state = new State(envi.Z, getPossionVariable(para.lamdan), envi.N, tw[i]);
+					
+					//开始决策
+					tsel = q.get(0); //7
+
+					List<Strategy> possibleAction =ActionFilter.getPossibleAction(state);
+					
+					str = selectRandomAction(possibleAction);
+											
+					t2[i] = runtime(i,a, state, tsel);
+					//删除，自增计数
+					q.remove(tsel);//17
+					a = getStrategy(str);
+					per[a]++; //统计
+					taskPosition[i] = a; 
+								
+					//下次决策时间
+					t = t1[i] + t2[i];
+					totalfsch += fsch;
+					tcost[i] = rsa.getCost();
+					tfail[i] = rsa.getFailureRate();
+					i++;
+				}
+				SimulationOut.output(per, totalfsch, taskPosition, tcost, tfail, Tmax, 2);
 	}
+	
+	private static Strategy selectRandomAction(List<Strategy> possibleAction) {
+		double y = Math.random();
+		if(y<1/(double)possibleAction.size())
+			return possibleAction.get(0);
+		else if(y<2/(double)possibleAction.size())
+			return possibleAction.get(1);
+			else return possibleAction.get(2);
+	}
+
+	private static void initialcount() {
+		for(Long i = 1l; i < 20*50*1000 ; i++) {
+			Map<Strategy, Integer> countnum = new HashMap<>();
+			countnum.put(Strategy.Local, TrainParam.iter);
+			countnum.put(Strategy.Cloudlet, TrainParam.iter);
+			countnum.put(Strategy.AdHoc, TrainParam.iter);
+			Learning2Para.count.put(i,countnum);
+		}
+		
+	}
+
 	//学习
 	private static Strategy learningA(State state) {
 		Strategy str = null; 
@@ -187,16 +328,15 @@ public class Simulation {
 		int tu = 1;
 		int to = 1;
 		int td = 1;
-		switch(para.str) {
-		case Local:
+	
 			while(true) {
 				if(rand.nextDouble()> para.fl)
 					break;
 				t++;
 				if(t == task.getK()) break;
 			}
-			OperatingTimes.t = t;
-		case Cloudlet:
+			OperatingTimes.tL = t;
+		
 			while(true) {
 				if(rand.nextDouble() > para.fup)
 					if(rand.nextDouble() > para.fdown)
@@ -209,10 +349,10 @@ public class Simulation {
 				t++;
 				if(t == task.getK()) break;
 			}
-			OperatingTimes.t = t;
-			OperatingTimes.tu = tu;
-			OperatingTimes.td = td;
-		case AdHoc:
+			OperatingTimes.tC = t;
+			OperatingTimes.tuC = tu;
+			OperatingTimes.tdC = td;
+		
 			while(true) {
 				if(rand.nextDouble() > para.ft)
 					if(rand.nextDouble() > para.fad)
@@ -233,11 +373,11 @@ public class Simulation {
 				t++;
 				if(t == task.getK()) break;	
 			}
-			OperatingTimes.t = t;
-			OperatingTimes.tu = tu;
-			OperatingTimes.to = to;
-			OperatingTimes.td = td;
-		}
+			OperatingTimes.tA = t;
+			OperatingTimes.tuA = tu;
+			OperatingTimes.toA = to;
+			OperatingTimes.tdA = td;
+		
 		
 	}
 	//计算用户区域
@@ -304,13 +444,13 @@ public class Simulation {
 		double delta=1.0/state.getN();
 		switch(a) {
 		case 0:
-			time = task.getWl()/Argument.sCpu * OperatingTimes.t;
+			time = task.getWl()/Argument.sCpu * OperatingTimes.tL;
 			break;
 		case 1:
 			CloudletParam.delta=delta;
-			time = task.getIp()/CloudletParam.rUp*delta * OperatingTimes.tu 
-					+ task.getWl()/CloudletParam.sCloudlet * OperatingTimes.td
-					+ task.getOp()/CloudletParam.rDown*delta * OperatingTimes.td;
+			time = task.getIp()/CloudletParam.rUp*delta * OperatingTimes.tuC 
+					+ task.getWl()/CloudletParam.sCloudlet * OperatingTimes.tdC
+					+ task.getOp()/CloudletParam.rDown*delta * OperatingTimes.tdC;
 			break;
 		case 2:
 			AdHocParam.delta=delta;
@@ -337,22 +477,52 @@ public class Simulation {
 			else
 				return Strategy.AdHoc;		   
 	}
-	//排序，已经不用了
-	private static List<Task> sortTask(List<Task> e, int el) {
-		Task t = null;
-		int min = 0, m = 0;
-		for(int i = 0; i < el; i++) {
-			for(int j = i + 1; i < el; i++) {
-				if(min > e.get(j).getRest()) {
-					min = e.get(j).getRest();
-					m = j;
-				}
-			}
-			t = e.get(i);
-			e.set(i,e.get(m));
-			e.set(m,t);
+
+	private static Strategy SelectAction2(Map<Long, Map<Strategy, Double>> map, State state, Task tsel) {
+		//根据格式遍历搜索
+		double min, t;
+		Strategy stra = Strategy.Local;
+		Strategy str = Strategy.Local;
+		min = Reward.getReward(state, str, tsel).getFailureRate()*LocalParam.cPen;
+		
+		str = Strategy.Cloudlet;
+		t = Reward.getReward(state, str, tsel).getFailureRate()*CloudletParam.cPen;
+		if(t<min) {
+			min = t;
+			stra = str;
 		}
-		return e;		
+		
+		str = Strategy.AdHoc;
+		t = Reward.getReward(state, str, tsel).getFailureRate();
+		if(t<min) {
+			min = t;
+			stra = str;
+		}
+		
+		return stra;
+	}
+	private static Strategy SelectAction3(Map<Long, Map<Strategy, Double>> map, State state, Task tsel) {
+		//根据格式遍历搜索
+		double min, t;
+		Strategy stra = Strategy.Local;
+		StrategyOFL str = StrategyOFL.Local;
+		min = RewardOFL.getReward(state, str, tsel).getCost();
+		
+		str = StrategyOFL.Cloudlet;
+		t = RewardOFL.getReward(state, str, tsel).getCost();
+		if(t<min) {
+			min = t;
+			stra = Strategy.Cloudlet;
+		}
+		
+		str = StrategyOFL.AdHoc;
+		t = RewardOFL.getReward(state, str, tsel).getCost();
+		if(t<min) {
+			min = t;
+			stra = Strategy.AdHoc;
+		}
+		
+		return stra;
 	}
 	//泊松过程模拟
 	private static double RandExp(double lamda) {

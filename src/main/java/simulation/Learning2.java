@@ -14,10 +14,9 @@ public enum Learning2 implements Learning2Service  {
     greedy{
         public Strategy trainState(Long stateID){
             State state = new State(stateID);
-            Map<Strategy, Integer> count = new HashMap<>();
+            Map<Strategy, Integer> countnum = new HashMap<>();
             Map<Strategy, Double> reward = new HashMap<>();
             List<Strategy> possibleAction =ActionFilter.getPossibleAction(state);
-            possibleAction.forEach(t->count.put(t,0));
             possibleAction.forEach(t->reward.put(t,0.0));
             Random random = new Random();
 
@@ -35,14 +34,17 @@ public enum Learning2 implements Learning2Service  {
                         }
                     }
                 }
+                
+                int count = Learning2Para.count.get(stateID).get(choosed);
                 double  wait = state.getQ()*TrainParam.rtt;
                 double  rest = TrainParam.lifespan - wait;
-                count.put(choosed,count.get(choosed)+1);
+                
                 Task curTask = new Task((int)rest, TrainParam.k,TrainParam.wl,TrainParam.ip,TrainParam.op, wait);
                 double cost =  Reward.getReward(state,choosed,curTask).getCost();
-                double newcost = (reward.get(choosed)*(count.get(choosed)-1) + cost)/count.get(choosed);
+                double newcost = (reward.get(choosed)*count + cost)/(count+1);
                 reward.put(choosed,newcost);
-        
+                countnum.put(choosed,count+1);
+                Learning2Para.count.put(stateID,countnum);
 
             Result.save(stateID,reward);
 			return choosed;
@@ -52,12 +54,11 @@ public enum Learning2 implements Learning2Service  {
 
         public Strategy trainState(Long stateID){
             State state = new State(stateID);
-            Map<Strategy, Integer> count = new HashMap<>();
+            Map<Strategy, Integer> countnum = new HashMap<>();
             Map<Strategy, Double> reward = new HashMap<>();
             Map<Strategy, Double> prob = new HashMap<>();
 
             List<Strategy> possibleAction =ActionFilter.getPossibleAction(state);
-            possibleAction.forEach(t->count.put(t,0));
             possibleAction.forEach(t->reward.put(t,0.0));
             possibleAction.forEach(t->prob.put(t,1.0/possibleAction.size()));
             Random random = new Random();
@@ -69,6 +70,7 @@ public enum Learning2 implements Learning2Service  {
                 double sum = possibleAction.stream().mapToDouble(t->reward.get(t)).sum();
                 possibleAction.forEach(t->prob.put(t,prob.get(t)/sum));
 
+                
                 // 根据分布选择action
                 List<Double> list = new ArrayList<>();
                 possibleAction.forEach(t -> list.add(prob.get(t)));
@@ -81,14 +83,17 @@ public enum Learning2 implements Learning2Service  {
                     }
                 }
 
+                int count = Learning2Para.count.get(stateID).get(choosed);
                 double  wait = state.getQ()*TrainParam.rtt;
                 double  rest = TrainParam.lifespan - wait;
-                count.put(choosed,count.get(choosed)+1);
+               
                 Task curTask = new Task((int)rest, TrainParam.k,TrainParam.wl,TrainParam.ip,TrainParam.op, wait);
                 double cost =  Reward.getReward(state,choosed,curTask).getCost();
-                double newcost = (reward.get(choosed)*(count.get(choosed)-1) + cost)/count.get(choosed);
+                double newcost = (reward.get(choosed)*count + cost)/(count+1);
                 reward.put(choosed,newcost);
-          
+                
+                countnum.put(choosed,count+1);
+                Learning2Para.count.put(stateID,countnum);
 
             Result.save(stateID,reward);
 			return choosed;

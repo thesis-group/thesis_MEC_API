@@ -22,7 +22,7 @@ public class FSCH {
             double failureRate=Math.pow(localParam.fl,k_);
 
             //计算失误惩罚
-            double Fsch=localParam.cPen*(OperatingTimes.t-1);
+            double Fsch=localParam.cPen*(OperatingTimes.tL-1);
             //返回值
             return Fsch;
         }
@@ -53,7 +53,7 @@ public class FSCH {
             //计算失败率
             double failureRate=Math.pow(pCloudlet,k_);
             //计算失败惩罚
-            double Fsch=cloudletParam.cPen * OperatingTimes.t;
+            double Fsch=cloudletParam.cPen * (OperatingTimes.tC-1);
             //返回值
             return Fsch;
         }
@@ -146,7 +146,7 @@ public class FSCH {
                 // 一次执行时间
                 double time = taoAd;
                 int kp = (int)(task.getRest()/time);
-                double fsch = adHocParam.cPen * Math.pow(1-pAd, kp);
+                double fsch = adHocParam.cPen * (OperatingTimes.tA-1);
                 // TODO 这里需要wait？ 不需要
                 double rtt = task.getWait();
                 //计算期望的能耗 TODO er没放在输出 放在argument里了
@@ -168,7 +168,7 @@ public class FSCH {
                 // 一次执行时间
                 double time = taoRan;
                 int kp = (int)(task.getRest()/time);
-                double fsch = adHocParam.cPen * OperatingTimes.t;
+                double fsch = adHocParam.cPen * (OperatingTimes.tA-1);
                 // TODO 这里需要wait？
                 double rtt = task.getWait();
                 //计算期望的能耗
@@ -272,15 +272,15 @@ public class FSCH {
 
             // 如果选择自组织网
             if( isAd ){
-            	taoAd = task.getIp() / adHocParam.rad *OperatingTimes.tu
-                        + task.getWl() / eSpeed *OperatingTimes.to
-                        + task.getOp()/adHocParam.rad* OperatingTimes.td;
+            	taoAd = task.getIp() / adHocParam.rad *OperatingTimes.tuA
+                        + task.getWl() / eSpeed *OperatingTimes.toA
+                        + task.getOp()/adHocParam.rad* OperatingTimes.tdA;
             }
             // 如果选择接入网
             else {
-            	taoAd = adHocParam.delta * task.getIp() / adHocParam.rup *OperatingTimes.tu
-                        + task.getWl() / eSpeed *OperatingTimes.to
-                        + adHocParam.delta *  task.getOp()/adHocParam.rdown* OperatingTimes.td;
+            	taoAd = adHocParam.delta * task.getIp() / adHocParam.rup *OperatingTimes.tuA
+                        + task.getWl() / eSpeed *OperatingTimes.toA
+                        + adHocParam.delta *  task.getOp()/adHocParam.rdown* OperatingTimes.tdA;
             }
             return taoAd;
 }

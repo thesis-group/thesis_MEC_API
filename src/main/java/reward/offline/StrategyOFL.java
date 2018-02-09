@@ -27,11 +27,11 @@ public enum StrategyOFL implements StrategyServiceOFL {
             double failureRate=Math.pow(localParam.fl,k_);
 
             //计算失误惩罚
-            double Fsch=localParam.cPen*(OperatingTimes.t - 1);
+            double Fsch=localParam.cPen*(OperatingTimes.tL - 1);
 
             //计算RTT 和 eCpu
             double RTT=0.0;
-            double Ecpu=localParam.eCpu*OperatingTimes.t ;
+            double Ecpu=localParam.eCpu*OperatingTimes.tL ;
             double temp=(1-localParam.fl)*(task.getWl()/Argument.sCpu);
             double middleValue=0;
             for(int i=1;i<=k_;i++){
@@ -41,7 +41,7 @@ public enum StrategyOFL implements StrategyServiceOFL {
             Ecpu*=middleValue;
 
             //计算执行花销
-            double Csch=(task.getWl()/Argument.sCpu)*localParam.cl*OperatingTimes.t;
+            double Csch=(task.getWl()/Argument.sCpu)*localParam.cl*OperatingTimes.tL;
 
             //计算代价
             double cost=Argument.wL1*Ecpu+Argument.wL2*Csch+Argument.wL3*Fsch;
@@ -92,14 +92,14 @@ public enum StrategyOFL implements StrategyServiceOFL {
        
             
             //计算失败惩罚
-            double Fsch=cloudletParam.cPen*t;
+            double Fsch=cloudletParam.cPen*(OperatingTimes.tC-1);
             //计算RTT
             double RTT=0.0+k_*Etime;
             //计算能耗期望
-            double Ecom=Energy1*(tu - 1) + Energy * td;
+            double Ecom=Energy1*OperatingTimes.tuC + Energy * OperatingTimes.tdC;
 
             //计算支付
-            double Cpay=cloudletParam.cCloudlet*task.getWl()/cloudletParam.sCloudlet * td;
+            double Cpay=cloudletParam.cCloudlet*task.getWl()/cloudletParam.sCloudlet * OperatingTimes.tdC;
 
             //计算代价
             double cost=Argument.wCL1*Ecom+Argument.wCL2*Cpay+Argument.wCL3*Fsch;
@@ -128,14 +128,14 @@ public enum StrategyOFL implements StrategyServiceOFL {
                     x -> (x*x/adHocParam.sigma)*Math.exp(-x*x/(2*adHocParam.sigma*adHocParam.sigma));
 
             //通过自组织网的一次执行时间 这里原公式E_cp 就当做是E_speed了
-            double taoAd = task.getIp() / adHocParam.rad * OperatingTimes.tu
-                    + task.getWl() / eSpeed * OperatingTimes.to
-                    + task.getOp()/adHocParam.rad * OperatingTimes.td;
+            double taoAd = task.getIp() / adHocParam.rad * OperatingTimes.tuA
+                    + task.getWl() / eSpeed * OperatingTimes.toA
+                    + task.getOp()/adHocParam.rad * OperatingTimes.tdA;
 
             //通过接入网的执行的一次执行时间
-            double taoRan = 2 * adHocParam.delta * task.getIp() / adHocParam.rup * OperatingTimes.tu
-                    + task.getWl() / eSpeed * OperatingTimes.to
-                    + 2 * adHocParam.delta *  task.getOp()/adHocParam.rdown * OperatingTimes.td;
+            double taoRan = 2 * adHocParam.delta * task.getIp() / adHocParam.rup * OperatingTimes.tuA
+                    + task.getWl() / eSpeed * OperatingTimes.toA
+                    + 2 * adHocParam.delta *  task.getOp()/adHocParam.rdown * OperatingTimes.tdA;
 
             double middle1 = 0.0;
 
@@ -209,12 +209,12 @@ public enum StrategyOFL implements StrategyServiceOFL {
                 // 一次执行时间
                 double time = taoAd;
                 int kp = (int)(task.getRest()/time);
-                double fsch = adHocParam.cPen * Math.pow(1-pAd, kp);
+                double fsch = adHocParam.cPen * (OperatingTimes.tA - 1);
                 // TODO 这里需要wait？ 不需要!
                 double rtt = 0.0;
                 //计算期望的能耗 TODO er没放在输出 放在argument里了
-                double eComp = (Argument.er * task.getIp()/adHocParam.rad) * OperatingTimes.tu
-                        + (Argument.er * task.getOp()/adHocParam.rad) * OperatingTimes.td;
+                double eComp = (Argument.er * task.getIp()/adHocParam.rad) * OperatingTimes.tuA
+                        + (Argument.er * task.getOp()/adHocParam.rad) * OperatingTimes.tdA;
                 for(int i = 1 ; i <= kp ; i++){
                     // 已经按照最新的公式进行修改
                     rtt += Math.pow((pAd),i-1) * i * time * (1 - pAd);
@@ -231,12 +231,12 @@ public enum StrategyOFL implements StrategyServiceOFL {
                 // 一次执行时间
                 double time = taoRan;
                 int kp = (int)(task.getRest()/time);
-                double fsch = adHocParam.cPen * Math.pow(1-pRan, kp);
+                double fsch = adHocParam.cPen * (OperatingTimes.tA - 1);
                 // TODO 这里需要wait？
                 double rtt = 0.0;
                 //计算期望的能耗
-                double eComp = (adHocParam.eup * task.getIp()/adHocParam.rup) * OperatingTimes.tu
-                        + (adHocParam.edown * task.getOp()/adHocParam.rdown) * OperatingTimes.td;
+                double eComp = (adHocParam.eup * task.getIp()/adHocParam.rup) * OperatingTimes.tuA
+                        + (adHocParam.edown * task.getOp()/adHocParam.rdown) * OperatingTimes.tdA;
                 // 已经按照最新的公式进行修改
                 for(int i = 1 ; i <= kp ; i++){
                     rtt += Math.pow((pAd),i-1) * i * time * (1 - pAd);
