@@ -1,8 +1,8 @@
 package simulation;
 
 public class Environment {
-	int Z;
-	int V;
-	int N;
-	int times;
+	public static int Z;
+	public static int V;
+	public static int N;
+	public static int times;
 }

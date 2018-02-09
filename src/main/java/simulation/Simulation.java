@@ -1,5 +1,6 @@
 package simulation;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -13,12 +14,12 @@ import rl.Learning;
 
 public class Simulation {
 	public static void DiaoDu(Map<Long, Map<Strategy,Double>> map, double beita, List<Task> task, int n) {
-		List<Task> q = null; //任务队列
-		List<Task> e = null; //中转队列
+		List<Task> q = new ArrayList<Task>(); //任务队列
+		List<Task> e = new ArrayList<Task>(); //中转队列
 		int el = 0;//中转队列长度
-		Task tsel = null; //临时任务变量
-		State state = null;
-		RewardBackValue rsa = null;
+		Task tsel = new Task(); //临时任务变量
+		State state = new State();
+		RewardBackValue rsa = new RewardBackValue(0,0,0);
 		double fsch = 0;
 		double totalfsch = 0;
 		int a = 0;
@@ -28,7 +29,7 @@ public class Simulation {
 		Parameter para = new Parameter();
 		
 		//构造服从指数分布的时间间隔序列Tn 
-		double lamda = 2, t = 0;
+		double t = 0;
 		Strategy str = null;
 		
 		int i = 1, rw = 1;//当前决策任务标号和到达任务的标号
@@ -163,7 +164,7 @@ public class Simulation {
 	}
 	//部分环境模拟
 	private static Environment enviroSimulation(Parameter para) {
-		Environment envi = null;
+		Environment envi = new Environment();
 		envi.Z = 0;
 		int n; //相遇的节点数
 		double[] p	= new double[100];

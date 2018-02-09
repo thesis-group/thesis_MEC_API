@@ -4,16 +4,16 @@ import reward.Strategy;
 
 public class Parameter {
 	
-	double fl;
-	double fup;
-	double fdown;
-	double ft;
-	double fad;
-	double ps;
-	double lamdan;
-	double lamdaq;
-	double lamdac;
-	double a;
-	double p;
-	Strategy str;
+	public static double fl;
+	public static  double fup;
+	public static  double fdown;
+	public static  double ft;
+	public static  double fad;
+	public static  double ps;
+	public static  double lamdan =1;
+	public static  double lamdaq =1;
+	public static  double lamdac =1;
+	public static  double a;
+	public static  double p;
+	public static  Strategy str;
 }

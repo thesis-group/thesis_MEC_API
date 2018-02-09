@@ -1,6 +1,7 @@
 package simulation;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 
 import model.Result;
@@ -8,10 +9,10 @@ import model.Task;
 
 public class SimulationsInput {
 	public static void simulationStart() {
-		List<Task> task = null; 
+		List<Task> task = new ArrayList<Task>(); 
 		
 		try {
-		String pathname = "D:\\text.txt";
+		String pathname = "D:\\Task.txt";
 		File filename = new File(pathname);
 		InputStreamReader reader = new InputStreamReader(  
                 new FileInputStream(filename)); // 建立一个输入流对象reader  
@@ -20,15 +21,15 @@ public class SimulationsInput {
         line = br.readLine();  
         int i = 0;
         
-        Task tsel = null;
+        Task tsel = new Task();
         while (line != null) {  
+            String[] a = line.trim().split("\t");
+        	tsel.setRest(Integer.parseInt(a[1]));
+            tsel.setK(Integer.parseInt(a[2]));
+            tsel.setWl(Double.parseDouble(a[3]));
+            tsel.setIp(Double.parseDouble(a[4]));
+            tsel.setOp(Double.parseDouble(a[5]));
             
-        	tsel.setRest(Integer.parseInt(line.substring(0, 0)));
-            tsel.setK(Integer.parseInt(line.substring(0, 0)));
-            tsel.setWl(Double.parseDouble(line.substring(0, 0)));
-            tsel.setIp(Double.parseDouble(line.substring(0, 0)));
-            tsel.setOp(Double.parseDouble(line.substring(0, 0)));
-            tsel.setWait(Double.parseDouble(line.substring(0, 0)));
         	
             task.add(tsel);
         	

@@ -56,6 +56,14 @@ public class Task {
         this.wait = wait;
     }
 
+    public Task() {
+        this.rest = 0;
+        this.k = 0;
+        this.wl = 0;
+        this.ip = 0;
+        this.op = 0;
+        this.wait = 0;
+    }
     public Task(int rest, int k, double wl, double ip, double op, double wait) {
         this.rest = rest;
         this.k = k;

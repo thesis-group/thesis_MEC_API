@@ -48,6 +48,8 @@ public enum Learning implements LearningService  {
                 Task curTask = new Task((int)rest, TrainParam.k,TrainParam.wl,TrainParam.ip,TrainParam.op, wait);
                 double cost =  Reward.getReward(state,choosed,curTask).getCost();
                 double newcost = (reward.get(choosed)*(count.get(choosed)-1) + cost)/count.get(choosed);
+                if(newcost == Double.POSITIVE_INFINITY || newcost == Double.NEGATIVE_INFINITY)
+                	newcost = 9999;
                 reward.put(choosed,newcost);
             }
 
