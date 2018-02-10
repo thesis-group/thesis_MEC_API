@@ -24,6 +24,7 @@ public class Simulation {
 		RewardBackValue rsa = new RewardBackValue(0,0,0);
 		double fsch = 0;
 		double totalfsch = 0;
+		double cost = 0;
 		int a = 0;
 		int Tmax = task.size();
 		int[] per = new int[3];
@@ -79,6 +80,9 @@ public class Simulation {
 			
 			//环境模拟载入
 			Environment envi = environment.get(i-1);
+			
+			tsel = q.get(0); //7
+			
 			//执行次数模拟
 			calculateTimes(para, tsel);
 			
@@ -86,15 +90,28 @@ public class Simulation {
 			state = new State(envi.Z, getPossionVariable(para.lamdan), envi.N, tw[i]);
 			
 			//开始决策
-			tsel = q.get(0); //7
 			
 			str = SelectAction(map, state, tsel);	//8
+			
+			str = learningA(map, state); //10
 			
 			fsch = calculateFsche(state, str, tsel); //9
 			
 			rsa = rewardR(state, str, tsel, n); //11
 			
-			str = learningA(state); //10
+			cost = map.get(state.getStateID()).get(str);
+			
+			int count = Learning2Para.count.get(state.getStateID()).get(str);
+			double newcost = (cost*count + cost)/(count+1);
+			
+			Map<Strategy, Integer> countnum = Learning2Para.count.get(state.getStateID());
+			countnum.put(str,count+1);
+            Learning2Para.count.put(state.getStateID(),countnum);
+						
+			Map<Strategy,Double> mapp = map.get(state.getStateID());
+			mapp.put(str, newcost);
+			map.put(state.getStateID(), mapp);
+			
 			
 			if (fsch > beita)  
 				str = changeAction(state, tsel); //13-16
@@ -164,22 +181,24 @@ public class Simulation {
 			{			
 				switch(para.n) {
 				case 0://reward
-					str = SelectAction(map, state, tsel);
+					str = SelectAction1(state, tsel);
 					break;
 				case 1: //fsch
-					str = SelectAction2(map, state, tsel);
+					str = SelectAction2(state, tsel);
 				}
 			}else {
 				switch(para.n) //离线
 				{
 				case 0://reward
-					str = SelectAction3(map, state, tsel);
+					str = SelectAction3(state, tsel);
 					break;
 				case 1: //fsch
 					str = changeAction(state, tsel);
 				}
 			}
-				
+			fsch = calculateFsche(state, str, tsel);
+			rsa = rewardR(state, str, tsel, n);	
+			
 			a = getStrategy(str);
 			t2[i] = runtime(i,a, state, tsel);
 			//删除，自增计数
@@ -243,10 +262,14 @@ public class Simulation {
 					
 					str = selectRandomAction(possibleAction);
 					
+					
 					a = getStrategy(str);						
 					t2[i] = runtime(i,a, state, tsel);
 					//删除，自增计数
 					q.remove(tsel);//17
+					
+					fsch = calculateFsche(state, str, tsel);
+					rsa = rewardR(state, str, tsel, n);	
 					
 					per[a]++; //统计
 					taskPosition[i] = a; 
@@ -282,15 +305,15 @@ public class Simulation {
 	}
 
 	//学习
-	private static Strategy learningA(State state) {
+	private static Strategy learningA(Map<Long, Map<Strategy, Double>> map, State state) {
 		Strategy str = null; 
 		
 		switch (TrainingTable.algorithm){
          case 0: //贪心算法
-        	 str = Learning2.greedy.trainState(state.getStateID());
+        	 str = Learning2.greedy.trainState(map, state.getStateID());
              break;
          case 1: //softmax算法
-        	 str = Learning2.softmax.trainState(state.getStateID());
+        	 str = Learning2.softmax.trainState(map, state.getStateID());
              break;
      }
 		return str;
@@ -451,18 +474,15 @@ public class Simulation {
 	//选择Strategy
 	private static Strategy SelectAction(Map<Long, Map<Strategy, Double>> map, State state, Task tsel) {
 		//根据格式遍历搜索
-		double min = 99999999;
+		double min = Double.POSITIVE_INFINITY;
 		Strategy str = Strategy.Local;
 		
-		for (Long in : map.keySet()) {
-			if(in == state.getStateID()) {
-				Map<Strategy, Double> map2 = map.get(in);
-				for(Strategy j : map2.keySet()) {
-					if(map2.get(j) < min) {
-						str = j;
-						min = map2.get(j);
-					}
-				}
+		long in = state.getStateID();
+		Map<Strategy, Double> map2 = map.get(in);
+		for(Strategy j : map2.keySet()) {
+			if(map2.get(j) < min) {
+				str = j;
+				min = map2.get(j);
 			}
 		}
 		return str;
@@ -507,8 +527,32 @@ public class Simulation {
 				return Strategy.AdHoc;		   
 	}
 
-	private static Strategy SelectAction2(Map<Long, Map<Strategy, Double>> map, State state, Task tsel) {
-		//根据格式遍历搜索
+	private static Strategy SelectAction1(State state, Task tsel) {
+	
+		double min, t;
+		Strategy stra = Strategy.Local;
+		Strategy str = Strategy.Local;
+		min = Reward.getReward(state, str, tsel).getCost();
+		
+		str = Strategy.Cloudlet;
+		t = Reward.getReward(state, str, tsel).getCost();
+		if(t<min) {
+			min = t;
+			stra = str;
+		}
+		
+		str = Strategy.AdHoc;
+		t = Reward.getReward(state, str, tsel).getCost();
+		if(t<min) {
+			min = t;
+			stra = str;
+		}
+		
+		return stra;
+	}
+	
+	private static Strategy SelectAction2(State state, Task tsel) {
+		
 		double min, t;
 		Strategy stra = Strategy.Local;
 		Strategy str = Strategy.Local;
@@ -530,8 +574,8 @@ public class Simulation {
 		
 		return stra;
 	}
-	private static Strategy SelectAction3(Map<Long, Map<Strategy, Double>> map, State state, Task tsel) {
-		//根据格式遍历搜索
+	private static Strategy SelectAction3(State state, Task tsel) {
+		
 		double min, t;
 		Strategy stra = Strategy.Local;
 		StrategyOFL str = StrategyOFL.Local;
