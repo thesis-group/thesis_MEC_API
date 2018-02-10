@@ -17,6 +17,9 @@ public class Parameter {
 	public static  double a = 1;
 	public static  double p = 0.5;
 	public static  Strategy str;
+	
+	public static double beita = 0.5;    //fsch判断阈值
+	
 	public static  int x = 0; //greedy算法选择 0在线 or 1离线
 	public static final int n = 0;	//greedy算法选择 0reward or 1fsch
 }

@@ -99,10 +99,11 @@ public class Simulation {
 			if (fsch > beita)  
 				str = changeAction(state, tsel); //13-16
 			
+			a = getStrategy(str);
 			t2[i] = runtime(i,a, state, tsel);
 			//删除，自增计数
 			q.remove(tsel);//17
-			a = getStrategy(str);
+			
 			per[a]++; //统计
 			taskPosition[i] = a; 
 						
@@ -115,6 +116,20 @@ public class Simulation {
 		}
 		
 		SimulationOut.output(per, totalfsch, taskPosition, tcost, tfail, Tmax, 0);
+		
+		
+		
+		per = new int[3];
+		totalfsch = 0;
+		tcost = new double[Tmax+1];
+		tfail = new double[Tmax+1];
+				
+		i = 1;
+		t = 0;
+		t1[0] = 0;
+		q.add(task.get(0));	//将第一个任务直接开始存入Q进行决策
+		tw[1] = 1;
+		rw = 2;
 		
 		//greedy
 		while(i<=Tmax) {
@@ -165,11 +180,11 @@ public class Simulation {
 				}
 			}
 				
-			
+			a = getStrategy(str);
 			t2[i] = runtime(i,a, state, tsel);
 			//删除，自增计数
 			q.remove(tsel);//17
-			a = getStrategy(str);
+			
 			per[a]++; //统计
 			taskPosition[i] = a; 
 						
@@ -181,6 +196,19 @@ public class Simulation {
 			i++;
 		}
 		SimulationOut.output(per, totalfsch, taskPosition, tcost, tfail, Tmax, 1);
+		
+		
+		per = new int[3];
+		totalfsch = 0;
+		tcost = new double[Tmax+1];
+		tfail = new double[Tmax+1];
+				
+		i = 1;
+		t = 0;
+		t1[0] = 0;
+		q.add(task.get(0));	//将第一个任务直接开始存入Q进行决策
+		tw[1] = 1;
+		rw = 2;
 		
 		//random
 		while(i<=Tmax) {
@@ -214,11 +242,12 @@ public class Simulation {
 					List<Strategy> possibleAction =ActionFilter.getPossibleAction(state);
 					
 					str = selectRandomAction(possibleAction);
-											
+					
+					a = getStrategy(str);						
 					t2[i] = runtime(i,a, state, tsel);
 					//删除，自增计数
 					q.remove(tsel);//17
-					a = getStrategy(str);
+					
 					per[a]++; //统计
 					taskPosition[i] = a; 
 								

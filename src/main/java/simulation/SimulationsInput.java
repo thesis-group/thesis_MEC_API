@@ -20,17 +20,19 @@ public class SimulationsInput {
         String line = "";  
         line = br.readLine();  
         int i = 0;
-        
+        int k = Integer.parseInt(line.trim());
+        line = br.readLine();  
         Task tsel = new Task();
         while (line != null) {  
             String[] a = line.trim().split("\t");
-        	tsel.setRest(Integer.parseInt(a[1]));
-            tsel.setK(Integer.parseInt(a[2]));
-            tsel.setWl(Double.parseDouble(a[3]));
-            tsel.setIp(Double.parseDouble(a[4]));
-            tsel.setOp(Double.parseDouble(a[5]));
-            
         	
+            
+            tsel.setWl(Double.parseDouble(a[1]));
+            tsel.setIp(Double.parseDouble(a[2]));
+            tsel.setOp(Double.parseDouble(a[3]));
+            tsel.setRest(Integer.parseInt(a[4]));
+            tsel.setK(k);
+            
             task.add(tsel);
         	
         	i++;
@@ -42,7 +44,7 @@ public class SimulationsInput {
              e.printStackTrace();  
          }
 		 
-		 Simulation.DiaoDu(Result.load(), 0.5, task, 1);
+		 Simulation.DiaoDu(Result.load(), Parameter.beita, task, 1);
 
 	}
 }
