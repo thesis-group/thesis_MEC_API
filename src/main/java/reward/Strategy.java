@@ -126,6 +126,9 @@ public enum Strategy implements StrategyService {
                         /(stage(i) * (2*i+1)) ;
             }
 <<<<<<< HEAD
+<<<<<<< HEAD
+>>>>>>> parent of cbc6e7b... fix<adHoc>:add Erf
+=======
 >>>>>>> parent of cbc6e7b... fix<adHoc>:add Erf
 =======
 >>>>>>> parent of cbc6e7b... fix<adHoc>:add Erf
@@ -133,6 +136,7 @@ public enum Strategy implements StrategyService {
                 //呈同一方向  假设v1和v2都是标量
                 double v = Math.abs(adHocParam.v1 - adHocParam.v2);
                 double finalV = v;
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
                 Function<Double, Double> T101 = x-> ((adHocParam.R - adHocParam.r) -x)/(finalV + Argument.epsilon);
@@ -164,6 +168,8 @@ public enum Strategy implements StrategyService {
 =======
 =======
 >>>>>>> parent of cbc6e7b... fix<adHoc>:add Erf
+=======
+>>>>>>> parent of cbc6e7b... fix<adHoc>:add Erf
                 double m1 = adHocParam.R + adHocParam.r;
                 double f0s = 2 * adHocParam.sigma * adHocParam.sigma * middle1
                         - Math.pow(adHocParam.R + adHocParam.r, 2)
@@ -187,6 +193,8 @@ public enum Strategy implements StrategyService {
             //垂直情况 d不知道什么 觉得可能还是x吧 TODO d是个啥
             v = Math.sqrt(adHocParam.v1*adHocParam.v1 + adHocParam.v2*adHocParam.v2);
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
 >>>>>>> parent of cbc6e7b... fix<adHoc>:add Erf
 =======
 >>>>>>> parent of cbc6e7b... fix<adHoc>:add Erf
