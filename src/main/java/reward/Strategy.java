@@ -1,6 +1,7 @@
 package reward;
 
 import model.Task;
+import org.apache.commons.math3.special.Erf;
 import param.*;
 import tools.Calculus;
 
@@ -54,7 +55,7 @@ public enum Strategy implements StrategyService {
             //计算上行传输错误概率
             double pUp=cloudletParam.fUp*(1-cloudletParam.fDown)/(1-cloudletParam.fUp*cloudletParam.fDown);
             //计算下行传输错误概率
-            double pDown=cloudletParam.fDown*(1-cloudletParam.fUp)/(1-cloudletParam.fUp*cloudletParam.fDown);
+            double pDown=cloudletParam.eDown*(1-cloudletParam.fUp)/(1-cloudletParam.fUp*cloudletParam.fDown);
             //计算任务一次尝试执行的期望时间
             double Etime=pUp*(task.getIp()/cloudletParam.rUp)*cloudletParam.delta+(1-pUp)*((task.getIp()/cloudletParam.rUp)*cloudletParam.delta+task.getWl()/cloudletParam.sCloudlet+(task.getOp()/cloudletParam.rDown)*cloudletParam.delta);
 
@@ -103,8 +104,8 @@ public enum Strategy implements StrategyService {
             double pVt = 2 * adHocParam.p1 * adHocParam.p3 + 2 * adHocParam.p1 * adHocParam.p2;
 
             //计算瑞利分布函数
-            Function<Double,Double> f =
-                    x -> (x*x/adHocParam.sigma)*Math.exp(-x*x/(2*adHocParam.sigma*adHocParam.sigma));
+//            Function<Double,Double> f =
+//                    x -> (x*x/adHocParam.sigma)*Math.exp(-x*x/(2*adHocParam.sigma*adHocParam.sigma));
 
             //通过自组织网的一次执行时间 这里原公式E_cp 就当做是E_speed了
             double taoAd = task.getIp() / adHocParam.rad
@@ -118,29 +119,24 @@ public enum Strategy implements StrategyService {
 
             double middle1 = 0.0;
 
-            for(int i = 0 ; i <=4 ; i++){
-                middle1+= Math.pow(-1,i)
-                        * Math.pow((adHocParam.R + adHocParam.r)/(Math.sqrt(2.0)*Math.abs(adHocParam.sigma)),2*i+1)
-                        /(stage(i) * (2*i+1)) ;
-            }
+            middle1 = Erf.erf(1/(Math.sqrt(2)*Math.abs(AdHocParam.sigma))*(adHocParam.R + adHocParam.r))
+                    - Erf.erf(0);
             //水平情况
                 //呈同一方向  假设v1和v2都是标量
                 double v = Math.abs(adHocParam.v1 - adHocParam.v2);
-                double finalV = v;
                 double m1 = adHocParam.R + adHocParam.r;
-                double f0s = 2 * adHocParam.sigma * adHocParam.sigma * middle1
+                double f0s = Math.sqrt(Math.PI)*Math.pow(AdHocParam.sigma,4) * middle1
                         - Math.pow(adHocParam.R + adHocParam.r, 2)
                         * Math.exp(-(Math.pow(adHocParam.R + adHocParam.r, 2))/2 * adHocParam.sigma*adHocParam.sigma)
                         + (v + Argument.epsilon) * taoAd
                         * (Math.exp(-4) * m1 * Math.pow(adHocParam.R + adHocParam.r, 2)
                         +Math.exp(-6)*Math.pow(adHocParam.sigma,4)*Math.pow(m1,-2)*Math.pow(adHocParam.R + adHocParam.r, 3)
                         +0.5*Math.exp(-8)*Math.pow(m1,-1)*Math.pow(adHocParam.R + adHocParam.r, 4));
-                System.out.println(f0s);
                 //呈不同方向
                 v = adHocParam.v1 + adHocParam.v2;
                 double m2 = -(adHocParam.R + adHocParam.r);
 //
-                double f0d = 2 * adHocParam.sigma * adHocParam.sigma * middle1
+                double f0d =  Math.sqrt(Math.PI)*Math.pow(AdHocParam.sigma,4) * middle1
                         - Math.pow(adHocParam.R + adHocParam.r, 2)
                         * Math.exp(-(Math.pow(adHocParam.R + adHocParam.r, 2))/2 * adHocParam.sigma*adHocParam.sigma)
                         + (v + Argument.epsilon) * taoAd
@@ -149,7 +145,13 @@ public enum Strategy implements StrategyService {
                         +0.5*Math.exp(-8)*Math.pow(m2,-1)*Math.pow(adHocParam.R + adHocParam.r, 4));;
             //垂直情况 d不知道什么 觉得可能还是x吧 TODO d是个啥
             v = Math.sqrt(adHocParam.v1*adHocParam.v1 + adHocParam.v2*adHocParam.v2);
-            double f1 =0.02;
+            double f1 = Math.sqrt(Math.PI)*Math.pow(AdHocParam.sigma,4) * middle1
+                    - Math.pow(adHocParam.R + adHocParam.r, 2)
+                    * Math.exp(-(Math.pow(adHocParam.R + adHocParam.r, 2))/2 * adHocParam.sigma*adHocParam.sigma)
+                    + (v + Argument.epsilon) * taoAd
+                    * (Math.exp(-4) * m1 * Math.pow(adHocParam.R + adHocParam.r, 2)
+                    +Math.exp(-6)*Math.pow(adHocParam.sigma,4)*Math.pow(m1,-2)*Math.pow(adHocParam.R + adHocParam.r, 3)
+                    +0.5*Math.exp(-8)*Math.pow(m1,-1)*Math.pow(adHocParam.R + adHocParam.r, 4));
             //综合的期望失败率
             double pOf = pHt * (f0s+f0d) + pVt * f1;
             //TODO 我理解用来计算n要用的是泊松过程的期望
@@ -160,7 +162,6 @@ public enum Strategy implements StrategyService {
             double pCom= 1 - Math.pow((1-Argument.fC),n*adHocParam.ps);
             //卸载到其他节点的失败率
             double pAd= (pCom * (1 - pOf)+(1-pCom) *pOf)/(1-pCom*pOf);
-
             //通过接入网卸载的几率为
             double pRan = (adHocParam.fup * (1 - adHocParam.fdown) * (1 - pCom)
                     + (1 - adHocParam.fup) * adHocParam.fdown )
