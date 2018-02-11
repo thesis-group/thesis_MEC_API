@@ -53,7 +53,6 @@ public class Simulation {
 		q.add(task.get(0));	//将第一个任务直接开始存入Q进行决策
 		tw[1] = 1;
 		rw++;
-		t = t1[1];
 		
 		List<Environment> environment = new ArrayList<>();
 		for(int j = 0; j < Tmax; j++) {
@@ -82,18 +81,7 @@ public class Simulation {
 			//环境模拟载入
 			Environment envi = environment.get(i-1);
 			
-			if(!q.isEmpty()) {
-				tsel = q.get(0); //7
-			}else {
-				t = t + 0.01;
-				continue;
-			}
-			if(tsel.getRest()-(t-t1[i]) <= 0) {
-				q.remove(tsel);
-				i++;
-				continue;
-			}
-			
+			tsel = q.get(0); //7
 			
 			//执行次数模拟
 			calculateTimes(para, tsel);
@@ -137,7 +125,7 @@ public class Simulation {
 			taskPosition[i] = a; 
 						
 			//下次决策时间
-			t = t + t2[i];
+			t = t1[i] + t2[i];
 			totalfsch += fsch;
 			tcost[i] = rsa.getCost();
 			tfail[i] = rsa.getFailureRate();
@@ -178,20 +166,6 @@ public class Simulation {
 				}
 			}
 			
-			
-			
-			if(!q.isEmpty()) {
-			tsel = q.get(0); //7
-			}else {
-				t = t + 0.01;
-				continue;
-			}
-			if(tsel.getRest()-(t-t1[i]) <= 0) {
-				q.remove(tsel);
-				i++;
-				continue;
-			}
-			tsel.setWait(tsel.getRest()-(t-t1[i]));
 			//环境模拟载入
 			Environment envi = environment.get(i-1);
 			//执行次数模拟
@@ -201,7 +175,8 @@ public class Simulation {
 			state = new State(envi.Z, envi.N, getPossionVariable(para.lamdan), tw[i]);
 			
 			//开始决策
-			
+			tsel = q.get(0); //7
+
 			if(para.x == 0) //在线 
 			{			
 				switch(para.n) {
@@ -233,7 +208,7 @@ public class Simulation {
 			taskPosition[i] = a; 
 						
 			//下次决策时间
-			t = t + t2[i];
+			t = t1[i] + t2[i];
 			totalfsch += fsch;
 			tcost[i] = rsa.getCost();
 			tfail[i] = rsa.getFailureRate();
@@ -271,17 +246,6 @@ public class Simulation {
 							el--;
 						}
 					}
-					if(!q.isEmpty()) {
-						tsel = q.get(0); //7
-						}else {
-							t = t + 0.01;
-							continue;
-						}
-						if(tsel.getRest()-(t-t1[i]) <= 0) {
-							q.remove(tsel);
-							i++;
-							continue;
-						}
 					
 					//环境模拟载入
 					Environment envi = environment.get(i-1);
@@ -292,6 +256,8 @@ public class Simulation {
 					state = new State(envi.Z,  envi.N, getPossionVariable(para.lamdan), tw[i]);
 					
 					//开始决策
+					tsel = q.get(0); //7
+
 					List<Strategy> possibleAction =ActionFilter.getPossibleAction(state);
 					
 					str = selectRandomAction(possibleAction);
@@ -309,7 +275,7 @@ public class Simulation {
 					taskPosition[i] = a; 
 								
 					//下次决策时间
-					t = t+ t2[i];
+					t = t1[i] + t2[i];
 					totalfsch += fsch;
 					tcost[i] = rsa.getCost();
 					tfail[i] = rsa.getFailureRate();
@@ -328,7 +294,7 @@ public class Simulation {
 	}
 
 	private static void initialcount() {
-		for(Long i = 0l; i < StateParam.Zmax*(StateParam.Nmax-StateParam.Nmin)* StateParam.Vmax*StateParam.Qmax ; i++) {
+		for(Long i = 1l; i < (StateParam.Nmax-StateParam.Nmin)* StateParam.Vmax*StateParam.Qmax ; i++) {
 			Map<Strategy, Integer> countnum = new HashMap<>();
 			countnum.put(Strategy.Local, TrainParam.iter);
 			countnum.put(Strategy.Cloudlet, TrainParam.iter);
@@ -617,7 +583,6 @@ public class Simulation {
 		}
 		return stra;
 	}
-	
 	private static Strategy SelectAction3(State state, Task tsel) {
 		List<Strategy> possibleAction =ActionFilter.getPossibleAction(state);
 		double min, t;
