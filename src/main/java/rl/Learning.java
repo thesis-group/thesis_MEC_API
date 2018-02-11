@@ -3,6 +3,7 @@ package rl;
 import model.Result;
 import model.State;
 import model.Task;
+import param.StateParam;
 import param.TrainParam;
 import reward.Reward;
 import reward.Strategy;
@@ -14,7 +15,7 @@ public enum Learning implements LearningService  {
     greedy{
         public void train(){
             long result = Result.getTrainedProcess()+1;
-            for(long i = result ; i < 20*50*1000 ; i++){
+            for(long i = result ; i < (StateParam.Nmax-StateParam.Nmin)* StateParam.Vmax*StateParam.Qmax ; i++){
                 trainState(i);
             }
         }
@@ -34,7 +35,7 @@ public enum Learning implements LearningService  {
                 if(random.nextDouble() < TrainParam.epsilon){
                     choosed = possibleAction.get(random.nextInt(possibleAction.size()));
                 }else{ 
-                    double cost = 200000.0;
+                    double cost = Double.POSITIVE_INFINITY;
                     for(Strategy s : possibleAction){
                         if(reward.get(s) < cost){
                             cost = reward.get(s);
@@ -59,7 +60,7 @@ public enum Learning implements LearningService  {
     softmax{
         public void train(){
             long result = Result.getTrainedProcess()+1;
-            for(long i = result ; i < 20*50*1000 ; i++){
+            for(long i = result ; i < (StateParam.Nmax-StateParam.Nmin)* StateParam.Vmax*StateParam.Qmax ; i++){
                 trainState(i);
             }
         }

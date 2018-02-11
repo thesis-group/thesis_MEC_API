@@ -2,6 +2,8 @@ package model;
 
 import java.util.Set;
 
+import param.StateParam;
+
 public class State {
     int Z; //用户所在id的集合 0-19
     int N; //q区域内连接AP的节点数 50-99
@@ -29,16 +31,16 @@ public class State {
         V = v;
         Q = q;
     }
-
+ 
     /**
      * 根据State的hashID 构造state
      * @param stateID
      */
     public State(long stateID){
-        this.Z  = (int) ((stateID /50000)%20);
-        this.N = (int) ((stateID/1000)%50+50);
-        this.V = (int) ((stateID/10)%100);
-        this.Q = (int) (stateID%10);
+        this.Z  = (int) ((stateID/((StateParam.Nmax-StateParam.Nmin)* StateParam.Vmax*StateParam.Qmax))%StateParam.Zmax);
+        this.N = (int) ((stateID/(StateParam.Qmax*StateParam.Vmax))%(StateParam.Nmax-StateParam.Nmin)+StateParam.Nmin);
+        this.V = (int) ((stateID/StateParam.Qmax)%StateParam.Vmax);
+        this.Q = (int) (stateID%StateParam.Qmax);
 
     }
 
@@ -47,7 +49,9 @@ public class State {
      * @return long
      */
     public long getStateID(){
-        return (Z)*50000 + (N-50) * 1000 + (V)*10 + Q;
+        return (Z)*(StateParam.Nmax-StateParam.Nmin)* StateParam.Vmax*StateParam.Qmax  
+        		+ (N-StateParam.Nmin) * StateParam.Vmax*StateParam.Qmax 
+        		+ (V) * StateParam.Qmax + Q;
     }
 
     @Override

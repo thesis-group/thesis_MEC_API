@@ -25,7 +25,7 @@ public enum Learning2 implements Learning2Service  {
                 if(random.nextDouble() < TrainParam.epsilon){
                     choosed = possibleAction.get(random.nextInt(possibleAction.size()));
                 }else{ 
-                    double cost = 200000.0;
+                    double cost = Double.POSITIVE_INFINITY;
                     for(Strategy s : possibleAction){
                         if(reward.get(s) < cost){
                             cost = reward.get(s);

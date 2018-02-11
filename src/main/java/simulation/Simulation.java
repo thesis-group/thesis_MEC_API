@@ -87,11 +87,11 @@ public class Simulation {
 			calculateTimes(para, tsel);
 			
 			//更新state
-			state = new State(envi.Z, getPossionVariable(para.lamdan), envi.N, tw[i]);
+			state = new State(envi.Z, envi.N, getPossionVariable(para.lamdan), tw[i]);
 			
 			//开始决策
 			
-			str = SelectAction(map, state, tsel);	//8
+			//str = SelectAction(map, state, tsel);	//8
 			
 			str = learningA(map, state); //10
 			
@@ -172,7 +172,7 @@ public class Simulation {
 			calculateTimes(para, tsel);
 			
 			//更新state
-			state = new State(envi.Z, getPossionVariable(para.lamdan), envi.N, tw[i]);
+			state = new State(envi.Z, envi.N, getPossionVariable(para.lamdan), tw[i]);
 			
 			//开始决策
 			tsel = q.get(0); //7
@@ -253,7 +253,7 @@ public class Simulation {
 					calculateTimes(para, tsel);
 					
 					//更新state
-					state = new State(envi.Z, getPossionVariable(para.lamdan), envi.N, tw[i]);
+					state = new State(envi.Z,  envi.N, getPossionVariable(para.lamdan), tw[i]);
 					
 					//开始决策
 					tsel = q.get(0); //7
@@ -294,7 +294,7 @@ public class Simulation {
 	}
 
 	private static void initialcount() {
-		for(Long i = 1l; i < 20*50*1000 ; i++) {
+		for(Long i = 1l; i < (StateParam.Nmax-StateParam.Nmin)* StateParam.Vmax*StateParam.Qmax ; i++) {
 			Map<Strategy, Integer> countnum = new HashMap<>();
 			countnum.put(Strategy.Local, TrainParam.iter);
 			countnum.put(Strategy.Cloudlet, TrainParam.iter);
@@ -363,12 +363,10 @@ public class Simulation {
 		double[] p	= new double[100];
 		envi.Z = calculateZ(envi.Z, para.p);
 		
-		for(double i = 0; i < 100; i++) {
+		for(double i = 0; i < StateParam.Nmax - StateParam.Nmin; i++) {
 			p[(int) i] = Math.pow(Math.E, -1.5*Math.pow(3, 0.5)*Math.pow(para.a,2))*Math.pow(1.5*Math.pow(3, 0.5)*Math.pow(para.a,2)*para.lamdac, i)/ getNFactorial((long)i);
 		}
-		envi.N = selectN(p,99); //计算N 
-				
-		//envi.times = calculateTimes(para);
+		envi.N = selectN(p); //计算N 
 		
 		return envi;
 		
@@ -439,14 +437,14 @@ public class Simulation {
 		if(r > p)
 			return z;
 		
-		for(int i = 1; i < 20; i++) {
-			if(r <= p * (double)i / 19.0) {
+		for(int i = 1; i < StateParam.Zmax; i++) {
+			if(r <= p * (double)i / (StateParam.Zmax - 1)) {
 				z = z + i;
 				break;
 			}
 		}
 		
-		if(z > 19) z = z - 20;
+		if(z > StateParam.Zmax - 1) z = z - StateParam.Zmax;
 		
 		return z;
 	}
@@ -458,18 +456,18 @@ public class Simulation {
         return n*getNFactorial(n-1);
     }
 	//选择N的大小
-	private static int selectN(double[] p, int N) {
+	private static int selectN(double[] p) {
 		 double m = 0;
 		 Random r = new Random(); //r为0至1的随机数
 		 double t = r.nextDouble();
-		 for (int i = 0; i <= N; i++) {
+		 for (int i = 0; i < StateParam.Nmax - StateParam.Nmin; i++) {
 		    /**
 		     * 产生的随机数在m~m+P[i]间则认为选中了i，因此i被选中的概率是P[i]
 		     */
 		        m = m + p[i];
-		        if (t <= m) return i;
+		        if (t <= m) return i+StateParam.Nmin;
 		    }
-		return 0;
+		return StateParam.Nmin;
 	}
 	//选择Strategy
 	private static Strategy SelectAction(Map<Long, Map<Strategy, Double>> map, State state, Task tsel) {
@@ -509,90 +507,105 @@ public class Simulation {
 	}
 	//根据F选择Strategy
 	private static Strategy changeAction(State state, Task tsel) {
+		Strategy str = Strategy.Local;
+		List<Strategy> possibleAction =ActionFilter.getPossibleAction(state);
+		Map<Strategy, Double> map = new HashMap<Strategy, Double>();
+		double min = Double.POSITIVE_INFINITY;
 		double delta=1.0/state.getN();//计算拥塞程度 
-		double a =  FSCH.calculateFsch0(tsel,new LocalParam());
+		map.put(Strategy.Local, FSCH.calculateFsch0(tsel,new LocalParam()));
 		CloudletParam.delta=delta;
-		double b =  FSCH.calculateFsch1(tsel,new CloudletParam());
+		map.put(Strategy.Cloudlet, FSCH.calculateFsch1(tsel,new CloudletParam()));
 		AdHocParam.delta=delta;
-		double c =  FSCH.calculateFsch2(tsel,new AdHocParam());
-		if(a < b)
-			if(a < c)
-				return Strategy.Local;
-			else
-				return Strategy.AdHoc;
-		else
-			if(b < c)
-				return Strategy.Cloudlet;
-			else
-				return Strategy.AdHoc;		   
+		map.put(Strategy.AdHoc, FSCH.calculateFsch2(tsel,new AdHocParam()));
+		
+		for(Strategy j : possibleAction) {
+			if(map.get(j) < min) {
+				str = j;
+				min = map.get(j);
+			}
+		}
+		return str;   
 	}
 
 	private static Strategy SelectAction1(State state, Task tsel) {
 	
+		List<Strategy> possibleAction =ActionFilter.getPossibleAction(state);
+		
 		double min, t;
 		Strategy stra = Strategy.Local;
 		Strategy str = Strategy.Local;
 		min = Reward.getReward(state, str, tsel).getCost();
 		
 		str = Strategy.Cloudlet;
-		t = Reward.getReward(state, str, tsel).getCost();
+		if(possibleAction.contains(str)) {
+			t = Reward.getReward(state, str, tsel).getCost();
 		if(t<min) {
 			min = t;
 			stra = str;
+		}
 		}
 		
 		str = Strategy.AdHoc;
+		if(possibleAction.contains(str)) {
 		t = Reward.getReward(state, str, tsel).getCost();
 		if(t<min) {
 			min = t;
 			stra = str;
 		}
-		
+		}
 		return stra;
 	}
 	
 	private static Strategy SelectAction2(State state, Task tsel) {
-		
+		List<Strategy> possibleAction =ActionFilter.getPossibleAction(state);
 		double min, t;
 		Strategy stra = Strategy.Local;
 		Strategy str = Strategy.Local;
 		min = Reward.getReward(state, str, tsel).getFailureRate()*LocalParam.cPen;
 		
+		
 		str = Strategy.Cloudlet;
+		if(possibleAction.contains(str)) {
 		t = Reward.getReward(state, str, tsel).getFailureRate()*CloudletParam.cPen;
 		if(t<min) {
 			min = t;
 			stra = str;
 		}
+		}
 		
 		str = Strategy.AdHoc;
+		if(possibleAction.contains(str)) {
 		t = Reward.getReward(state, str, tsel).getFailureRate();
 		if(t<min) {
 			min = t;
 			stra = str;
 		}
-		
+		}
 		return stra;
 	}
 	private static Strategy SelectAction3(State state, Task tsel) {
-		
+		List<Strategy> possibleAction =ActionFilter.getPossibleAction(state);
 		double min, t;
 		Strategy stra = Strategy.Local;
 		StrategyOFL str = StrategyOFL.Local;
 		min = RewardOFL.getReward(state, str, tsel).getCost();
 		
 		str = StrategyOFL.Cloudlet;
+		if(possibleAction.contains(Strategy.Cloudlet)) {
 		t = RewardOFL.getReward(state, str, tsel).getCost();
 		if(t<min) {
 			min = t;
 			stra = Strategy.Cloudlet;
 		}
+		}
 		
 		str = StrategyOFL.AdHoc;
+		if(possibleAction.contains(Strategy.AdHoc)) {
 		t = RewardOFL.getReward(state, str, tsel).getCost();
 		if(t<min) {
 			min = t;
 			stra = Strategy.AdHoc;
+		}
 		}
 		
 		return stra;
