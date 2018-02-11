@@ -125,11 +125,15 @@ public enum Strategy implements StrategyService {
                         * Math.pow((adHocParam.R + adHocParam.r)/(Math.sqrt(2.0)*Math.abs(adHocParam.sigma)),2*i+1)
                         /(stage(i) * (2*i+1)) ;
             }
+<<<<<<< HEAD
+>>>>>>> parent of cbc6e7b... fix<adHoc>:add Erf
+=======
 >>>>>>> parent of cbc6e7b... fix<adHoc>:add Erf
             //水平情况
                 //呈同一方向  假设v1和v2都是标量
                 double v = Math.abs(adHocParam.v1 - adHocParam.v2);
                 double finalV = v;
+<<<<<<< HEAD
 <<<<<<< HEAD
                 Function<Double, Double> T101 = x-> ((adHocParam.R - adHocParam.r) -x)/(finalV + Argument.epsilon);
 //                double f0s = Calculus.Integrate(
@@ -158,6 +162,8 @@ public enum Strategy implements StrategyService {
 //                    adHocParam.r + adHocParam.R
 //            );
 =======
+=======
+>>>>>>> parent of cbc6e7b... fix<adHoc>:add Erf
                 double m1 = adHocParam.R + adHocParam.r;
                 double f0s = 2 * adHocParam.sigma * adHocParam.sigma * middle1
                         - Math.pow(adHocParam.R + adHocParam.r, 2)
@@ -180,6 +186,9 @@ public enum Strategy implements StrategyService {
                         +0.5*Math.exp(-8)*Math.pow(m2,-1)*Math.pow(adHocParam.R + adHocParam.r, 4));;
             //垂直情况 d不知道什么 觉得可能还是x吧 TODO d是个啥
             v = Math.sqrt(adHocParam.v1*adHocParam.v1 + adHocParam.v2*adHocParam.v2);
+<<<<<<< HEAD
+>>>>>>> parent of cbc6e7b... fix<adHoc>:add Erf
+=======
 >>>>>>> parent of cbc6e7b... fix<adHoc>:add Erf
             double f1 =0.02;
             //综合的期望失败率
