@@ -16,7 +16,7 @@ public enum Learning2 implements Learning2Service  {
             State state = new State(stateID);
             Map<Strategy, Double> reward = new HashMap<>();
             List<Strategy> possibleAction =ActionFilter.getPossibleAction(state);
-            possibleAction.forEach(t->reward.put(t,map.get(stateID).get(t)));
+            possibleAction.forEach(t->reward.put(t,(map.get(stateID)).get(t)));
             Random random = new Random();
 
            

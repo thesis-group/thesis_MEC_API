@@ -5,5 +5,5 @@ public class StateParam {
 	public static int Nmax = 100;
 	public static int Nmin = 50;
 	public static int Vmax = 100;
-	public static int Qmax = 100;
+	public static int Qmax = 10;
 }
