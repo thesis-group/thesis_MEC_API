@@ -15,7 +15,7 @@ public enum Learning implements LearningService  {
     greedy{
         public void train(){
             long result = Result.getTrainedProcess()+1;
-            for(long i = result ; i < (StateParam.Nmax-StateParam.Nmin)* StateParam.Vmax*StateParam.Qmax ; i++){
+            for(long i = result ; i < StateParam.Zmax*(StateParam.Nmax-StateParam.Nmin)* StateParam.Vmax*StateParam.Qmax ; i++){
                 trainState(i);
             }
         }
@@ -45,6 +45,7 @@ public enum Learning implements LearningService  {
                 }
                 double  wait = state.getQ()*TrainParam.rtt;
                 double  rest = TrainParam.lifespan - wait;
+                if(rest <0) rest = 0;
                 count.put(choosed,count.get(choosed)+1);
                 Task curTask = new Task((int)rest, TrainParam.k,TrainParam.wl,TrainParam.ip,TrainParam.op, wait);
                 double cost =  Reward.getReward(state,choosed,curTask).getCost();
@@ -60,7 +61,7 @@ public enum Learning implements LearningService  {
     softmax{
         public void train(){
             long result = Result.getTrainedProcess()+1;
-            for(long i = result ; i < (StateParam.Nmax-StateParam.Nmin)* StateParam.Vmax*StateParam.Qmax ; i++){
+            for(long i = result ; i < StateParam.Zmax*(StateParam.Nmax-StateParam.Nmin)* StateParam.Vmax*StateParam.Qmax ; i++){
                 trainState(i);
             }
         }
@@ -98,6 +99,7 @@ public enum Learning implements LearningService  {
 
                 double  wait = state.getQ()*TrainParam.rtt;
                 double  rest = TrainParam.lifespan - wait;
+                if(rest <0) rest = 0;
                 count.put(choosed,count.get(choosed)+1);
                 Task curTask = new Task((int)rest, TrainParam.k,TrainParam.wl,TrainParam.ip,TrainParam.op, wait);
                 double cost =  Reward.getReward(state,choosed,curTask).getCost();

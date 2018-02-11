@@ -1,8 +1,15 @@
 package simulation;
 
 public class Environment {
-	public static int Z;
-	public static int V;
-	public static int N;
-	public static int times;
+	public int Z;
+	public int V;
+	public int N;
+	public int times;
+	
+	public Environment(){
+		this.Z = 0;
+		this.V = 0;
+		this.N = 50;
+		this.times = 0;
+    }
 }
