@@ -1,18 +1,18 @@
 package model;
 
 public class Task {
-    private  int rest; //剩余生命周期
+    private double rest; //剩余生命周期
     private int k;  //最大执行次数上限
     private double wl; //工作负载
     private double ip; //输入数据量
     private double op; //输出数据量
     private double wait;//任务在队列中的等待时间
 
-    public int getRest() {
+    public double getRest() {
         return rest;
     }
 
-    public void setRest(int rest) {
+    public void setRest(double rest) {
         this.rest = rest;
     }
 
@@ -64,7 +64,7 @@ public class Task {
         this.op = 0;
         this.wait = 0;
     }
-    public Task(int rest, int k, double wl, double ip, double op, double wait) {
+    public Task(double rest, int k, double wl, double ip, double op, double wait) {
         this.rest = rest;
         this.k = k;
         this.wl = wl;

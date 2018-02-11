@@ -16,6 +16,48 @@ import tools.ActionFilter;
 
 public class Simulation {
 	public static void DiaoDu(Map<Long, Map<Strategy,Double>> map, double beita, List<Task> task, int n) {
+		
+		int Tmax = task.size();
+		double [] t1 = new double[Tmax +2];
+		Parameter para = new Parameter();
+		
+		//构造服从指数分布的时间间隔序列Tn 		
+		int i = 1;			
+		t1[0] = 0;
+		//存入t1为每个任务的到达时间从下标1开始
+		while(i <= Tmax) {
+			t1[i] = RandExp(para.lamdaq) + t1[i - 1];
+			i++;
+		}	
+		//环境模拟		
+		List<Environment> environment = new ArrayList<>();
+		for(int j = 0; j < Tmax; j++) {
+			Environment e = new Environment();
+			e = enviroSimulation(para);
+			environment.add(e);
+		}
+		
+		//调度算法
+		initialcount();
+		FtOPAlgorithm(map,beita,task,environment,t1,para);
+		GreedyAlgorithm(map,beita,task,environment,t1,para,0,0);
+		GreedyAlgorithm(map,beita,task,environment,t1,para,0,1);
+		GreedyAlgorithm(map,beita,task,environment,t1,para,1,0);
+		GreedyAlgorithm(map,beita,task,environment,t1,para,1,1);
+		RandomAlgorithm(map,beita,task,environment,t1,para);
+	}
+	
+	private static void GreedyAlgorithm(Map<Long, Map<Strategy, Double>> map, double beita, List<Task> task, List<Environment> environment, double[] t1, Parameter para, int x, int n) {
+		int a = 0, nodo = 0;
+		double t = t1[1];
+		int Tmax = task.size();
+		int[] per = new int[3];
+		int[] taskPosition = new int[Tmax+1];
+		int i = 1, rw = 1;//当前决策任务标号和到达任务的标号
+		double [] t2 = new double [Tmax+2];
+		double [] tcost = new double[Tmax+1];
+		double [] tfail = new double[Tmax+1];
+		int[] tw = new int[Tmax+1];		
 		List<Task> q = new ArrayList<Task>(); //任务队列
 		List<Task> e = new ArrayList<Task>(); //中转队列
 		int el = 0;//中转队列长度
@@ -23,49 +65,18 @@ public class Simulation {
 		State state = new State();
 		RewardBackValue rsa = new RewardBackValue(0,0,0);
 		double fsch = 0;
-		double totalfsch = 0;
+		double totalfsch = 0, totalcost = 0;
 		double cost = 0;
-		int a = 0;
-		int Tmax = task.size();
-		int[] per = new int[3];
-		int[] taskPosition = new int[Tmax+1];
-		Parameter para = new Parameter();
-		
-		//构造服从指数分布的时间间隔序列Tn 
-		double t = 0;
 		Strategy str = null;
-		
-		int i = 1, rw = 1;//当前决策任务标号和到达任务的标号
-		double [] t1 = new double[Tmax+2];
-		double [] t2 = new double [Tmax+2];
-		double [] tcost = new double[Tmax+1];
-		double [] tfail = new double[Tmax+1];
-		int[] tw = new int[Tmax+1];
-		
-		t1[0] = 0;
-		//存入t1为每个任务的到达时间从下标1开始
-		while(i <= Tmax) {
-			t1[i] = RandExp(para.lamdaq) + t1[i - 1];
-			i++;
-		}
-		i = 1;
-	
 		q.add(task.get(0));	//将第一个任务直接开始存入Q进行决策
 		tw[1] = 1;
 		rw++;
-		t = t1[1];
 		
-		List<Environment> environment = new ArrayList<>();
-		for(int j = 0; j < Tmax; j++) {
-			environment.add(enviroSimulation(para));
-		}
-		
-		//调度算法
-		initialcount();
 		while(i<=Tmax) {
 			//存入e中中转
 			while(t1[rw] < t&&t1[rw]!=0) {
-				e.add(task.get(rw-1));
+				Task tt = new Task(task.get(rw-1).getRest(),task.get(rw-1).getK(),task.get(rw-1).getWl(),task.get(rw-1).getIp(),task.get(rw-1).getOp(),task.get(rw-1).getWait()); 
+				e.add(tt);
 				el++;
 				tw[rw] = q.size() + e.size();//等待队列长度
 				rw++;
@@ -89,11 +100,13 @@ public class Simulation {
 				continue;
 			}
 			if(tsel.getRest()-(t-t1[i]) <= 0) {
-				q.remove(tsel);
+				q.remove(0);
 				i++;
+				nodo++;
 				continue;
 			}
-			
+			tsel.setWait(t-t1[i]);
+			tsel.setRest(tsel.getRest()-tsel.getWait());
 			
 			//执行次数模拟
 			calculateTimes(para, tsel);
@@ -103,35 +116,36 @@ public class Simulation {
 			
 			//开始决策
 			
-			//str = SelectAction(map, state, tsel);	//8
+			if(x == 0) //在线 
+			{			
+				switch(n) {
+				case 0://reward
+					str = SelectAction1(state, tsel);
+					break;
+				case 1: //fsch
+					str = SelectAction2(state, tsel);
+				}
+			}else {
+				switch(n) //离线
+				{
+				case 0://reward
+					str = SelectAction3(state, tsel);
+					break;
+				case 1: //fsch
+					str = changeAction(state, tsel);
+				}
+			}
 			
-			str = learningA(map, state); //10
 			
 			fsch = calculateFsche(state, str, tsel); //9
 			
-			rsa = rewardR(state, str, tsel, n); //11
+			rsa = rewardR(state, str, tsel, 1); //11
 			
-			cost = map.get(state.getStateID()).get(str);
-			
-			int count = Learning2Para.count.get(state.getStateID()).get(str);
-			double newcost = (cost*count + cost)/(count+1);
-			
-			Map<Strategy, Integer> countnum = Learning2Para.count.get(state.getStateID());
-			countnum.put(str,count+1);
-            Learning2Para.count.put(state.getStateID(),countnum);
-						
-			Map<Strategy,Double> mapp = map.get(state.getStateID());
-			mapp.put(str, newcost);
-			map.put(state.getStateID(), mapp);
-			
-			
-			if (fsch > beita)  
-				str = changeAction(state, tsel); //13-16
-			
+
 			a = getStrategy(str);
 			t2[i] = runtime(i,a, state, tsel);
 			//删除，自增计数
-			q.remove(tsel);//17
+			q.remove(0);//17
 			
 			per[a]++; //统计
 			taskPosition[i] = a; 
@@ -139,32 +153,47 @@ public class Simulation {
 			//下次决策时间
 			t = t + t2[i];
 			totalfsch += fsch;
+			
 			tcost[i] = rsa.getCost();
-			tfail[i] = rsa.getFailureRate();
+			totalcost += tcost[i];
+			tfail[i] = fsch;
 			i++;
 		}
+		String name = "Result-Greedy-" + x + "-" + n + ".txt";
+		SimulationOut.output(per, totalfsch,totalcost, taskPosition, tcost, tfail, Tmax, name, nodo);
 		
-		SimulationOut.output(per, totalfsch, taskPosition, tcost, tfail, Tmax, 0);
-		
-		
-		
-		per = new int[3];
-		totalfsch = 0;
-		tcost = new double[Tmax+1];
-		tfail = new double[Tmax+1];
-				
-		i = 1;
-		t = 0;
-		t1[0] = 0;
+	}
+
+	private static void FtOPAlgorithm(Map<Long, Map<Strategy, Double>> map, double beita, List<Task> task, List<Environment> environment, double[] t1, Parameter para) {
+		int a = 0, nodo = 0;
+		double t = t1[1];
+		int Tmax = task.size();
+		int[] per = new int[3];
+		int[] taskPosition = new int[Tmax+1];
+		int i = 1, rw = 1;//当前决策任务标号和到达任务的标号
+		double [] t2 = new double [Tmax+2];
+		double [] tcost = new double[Tmax+1];
+		double [] tfail = new double[Tmax+1];
+		int[] tw = new int[Tmax+1];		
+		List<Task> q = new ArrayList<Task>(); //任务队列
+		List<Task> e = new ArrayList<Task>(); //中转队列
+		int el = 0;//中转队列长度
+		Task tsel = new Task(); //临时任务变量
+		State state = new State();
+		RewardBackValue rsa = new RewardBackValue(0,0,0);
+		double fsch = 0;
+		double totalfsch = 0, totalcost = 0;
+		double cost = 0;
+		Strategy str = null;
 		q.add(task.get(0));	//将第一个任务直接开始存入Q进行决策
 		tw[1] = 1;
-		rw = 2;
+		rw++;
 		
-		//greedy
 		while(i<=Tmax) {
 			//存入e中中转
 			while(t1[rw] < t&&t1[rw]!=0) {
-				e.add(task.get(rw-1));
+				Task tt = new Task(task.get(rw-1).getRest(),task.get(rw-1).getK(),task.get(rw-1).getWl(),task.get(rw-1).getIp(),task.get(rw-1).getOp(),task.get(rw-1).getWait()); 
+				e.add(tt);
 				el++;
 				tw[rw] = q.size() + e.size();//等待队列长度
 				rw++;
@@ -178,22 +207,24 @@ public class Simulation {
 				}
 			}
 			
-			
+			//环境模拟载入
+			Environment envi = environment.get(i-1);
 			
 			if(!q.isEmpty()) {
-			tsel = q.get(0); //7
+				tsel = q.get(0); //7
 			}else {
 				t = t + 0.01;
 				continue;
 			}
 			if(tsel.getRest()-(t-t1[i]) <= 0) {
-				q.remove(tsel);
+				q.remove(0);
 				i++;
+				nodo++;
 				continue;
 			}
-			tsel.setWait(tsel.getRest()-(t-t1[i]));
-			//环境模拟载入
-			Environment envi = environment.get(i-1);
+			tsel.setWait(t-t1[i]);
+			tsel.setRest(tsel.getRest()-tsel.getWait());
+			
 			//执行次数模拟
 			calculateTimes(para, tsel);
 			
@@ -202,32 +233,36 @@ public class Simulation {
 			
 			//开始决策
 			
-			if(para.x == 0) //在线 
-			{			
-				switch(para.n) {
-				case 0://reward
-					str = SelectAction1(state, tsel);
-					break;
-				case 1: //fsch
-					str = SelectAction2(state, tsel);
-				}
-			}else {
-				switch(para.n) //离线
-				{
-				case 0://reward
-					str = SelectAction3(state, tsel);
-					break;
-				case 1: //fsch
-					str = changeAction(state, tsel);
-				}
+			str = learningA(map, state); //10
+			
+			fsch = calculateFsche(state, str, tsel); //9
+			
+			rsa = rewardR(state, str, tsel, 1); //11
+			
+			cost = map.get(state.getStateID()).get(str);
+			
+			int count = Learning2Para.count.get(state.getStateID()).get(str);
+			double newcost = (cost*count + rsa.getCost())/(count+1);
+			
+			Map<Strategy, Integer> countnum = Learning2Para.count.get(state.getStateID());
+			countnum.put(str,count+1);
+            Learning2Para.count.put(state.getStateID(),countnum);
+						
+			Map<Strategy,Double> mapp = map.get(state.getStateID());
+			mapp.put(str, newcost);
+			map.put(state.getStateID(), mapp);
+			
+			
+			if (fsch > beita) {
+				str = changeAction(state, tsel); //13-16.
+				rsa = rewardR(state, str, tsel, 1);
+				fsch = calculateFsche(state, str, tsel); 
 			}
-			fsch = calculateFsche(state, str, tsel);
-			rsa = rewardR(state, str, tsel, n);	
 			
 			a = getStrategy(str);
 			t2[i] = runtime(i,a, state, tsel);
 			//删除，自增计数
-			q.remove(tsel);//17
+			q.remove(0);//17
 			
 			per[a]++; //统计
 			taskPosition[i] = a; 
@@ -235,87 +270,114 @@ public class Simulation {
 			//下次决策时间
 			t = t + t2[i];
 			totalfsch += fsch;
+			
 			tcost[i] = rsa.getCost();
-			tfail[i] = rsa.getFailureRate();
+			totalcost += tcost[i];
+			tfail[i] = fsch;
 			i++;
 		}
-		SimulationOut.output(per, totalfsch, taskPosition, tcost, tfail, Tmax, 1);
+		String name = "Result-FtOP.txt";
+		SimulationOut.output(per, totalfsch,totalcost, taskPosition, tcost, tfail, Tmax, name, nodo);
 		
-		
-		per = new int[3];
-		totalfsch = 0;
-		tcost = new double[Tmax+1];
-		tfail = new double[Tmax+1];
-				
-		i = 1;
-		t = 0;
-		t1[0] = 0;
+	}
+	
+	private static void RandomAlgorithm(Map<Long, Map<Strategy, Double>> map, double beita, List<Task> task, List<Environment> environment, double[] t1, Parameter para) {
+		int a = 0, nodo = 0;
+		double t = t1[1];
+		int Tmax = task.size();
+		int[] per = new int[3];
+		int[] taskPosition = new int[Tmax+1];
+		int i = 1, rw = 1;//当前决策任务标号和到达任务的标号
+		double [] t2 = new double [Tmax+2];
+		double [] tcost = new double[Tmax+1];
+		double [] tfail = new double[Tmax+1];
+		int[] tw = new int[Tmax+1];		
+		List<Task> q = new ArrayList<Task>(); //任务队列
+		List<Task> e = new ArrayList<Task>(); //中转队列
+		int el = 0;//中转队列长度
+		Task tsel = new Task(); //临时任务变量
+		State state = new State();
+		RewardBackValue rsa = new RewardBackValue(0,0,0);
+		double fsch = 0;
+		double totalfsch = 0, totalcost = 0;
+		double cost = 0;
+		Strategy str = null;
 		q.add(task.get(0));	//将第一个任务直接开始存入Q进行决策
 		tw[1] = 1;
-		rw = 2;
+		rw++;
 		
-		//random
 		while(i<=Tmax) {
-		//存入e中中转
+			//存入e中中转
 			while(t1[rw] < t&&t1[rw]!=0) {
-						e.add(task.get(rw-1));
-						el++;
-						tw[rw] = q.size() + e.size();//等待队列长度
-						rw++;
-					}
-					//是否需要排序，然后加入q队列，有问题需修改
-					if(!e.isEmpty()) {
-						while(el != 0) {
-							q.add(e.get(0));
-							e.remove(0);
-							el--;
-						}
-					}
-					if(!q.isEmpty()) {
-						tsel = q.get(0); //7
-						}else {
-							t = t + 0.01;
-							continue;
-						}
-						if(tsel.getRest()-(t-t1[i]) <= 0) {
-							q.remove(tsel);
-							i++;
-							continue;
-						}
-					
-					//环境模拟载入
-					Environment envi = environment.get(i-1);
-					//执行次数模拟
-					calculateTimes(para, tsel);
-					
-					//更新state
-					state = new State(envi.Z,  envi.N, getPossionVariable(para.lamdan), tw[i]);
-					
-					//开始决策
-					List<Strategy> possibleAction =ActionFilter.getPossibleAction(state);
-					
-					str = selectRandomAction(possibleAction);
-					
-					
-					a = getStrategy(str);						
-					t2[i] = runtime(i,a, state, tsel);
-					//删除，自增计数
-					q.remove(tsel);//17
-					
-					fsch = calculateFsche(state, str, tsel);
-					rsa = rewardR(state, str, tsel, n);	
-					
-					per[a]++; //统计
-					taskPosition[i] = a; 
-								
-					//下次决策时间
-					t = t+ t2[i];
-					totalfsch += fsch;
-					tcost[i] = rsa.getCost();
-					tfail[i] = rsa.getFailureRate();
-					i++;
+				Task tt = new Task(task.get(rw-1).getRest(),task.get(rw-1).getK(),task.get(rw-1).getWl(),task.get(rw-1).getIp(),task.get(rw-1).getOp(),task.get(rw-1).getWait()); 
+				e.add(tt);
+				el++;
+				tw[rw] = q.size() + e.size();//等待队列长度
+				rw++;
+			}
+			//是否需要排序，然后加入q队列，有问题需修改
+			if(!e.isEmpty()) {
+				while(el != 0) {
+					q.add(e.get(0));
+					e.remove(0);
+					el--;
 				}
-				SimulationOut.output(per, totalfsch, taskPosition, tcost, tfail, Tmax, 2);
+			}
+			
+			//环境模拟载入
+			Environment envi = environment.get(i-1);
+			
+			if(!q.isEmpty()) {
+				tsel = q.get(0); //7
+			}else {
+				t = t + 0.01;
+				continue;
+			}
+			if(tsel.getRest()-(t-t1[i]) <= 0) {
+				q.remove(0);
+				i++;
+				nodo++;
+				continue;
+			}
+			tsel.setWait(t-t1[i]);
+			tsel.setRest(tsel.getRest()-tsel.getWait());
+			
+			//执行次数模拟
+			calculateTimes(para, tsel);
+			
+			//更新state
+			state = new State(envi.Z, envi.N, getPossionVariable(para.lamdan), tw[i]);
+			
+			//开始决策
+			
+			List<Strategy> possibleAction =ActionFilter.getPossibleAction(state);
+			
+			str = selectRandomAction(possibleAction);
+			
+			fsch = calculateFsche(state, str, tsel); //9
+			
+			rsa = rewardR(state, str, tsel, 1); //11
+			
+			a = getStrategy(str);
+			t2[i] = runtime(i,a, state, tsel);
+			//删除，自增计数
+			q.remove(0);//17
+			
+			per[a]++; //统计
+			taskPosition[i] = a; 
+						
+			//下次决策时间
+			t = t + t2[i];
+			totalfsch += fsch;
+			
+			tcost[i] = rsa.getCost();
+			totalcost += tcost[i];
+			tfail[i] = fsch;
+			i++;
+		}
+		String name = "Result-Random.txt";
+		SimulationOut.output(per, totalfsch,totalcost, taskPosition, tcost, tfail, Tmax, name, nodo);
+		
 	}
 	
 	private static Strategy selectRandomAction(List<Strategy> possibleAction) {
@@ -392,10 +454,11 @@ public class Simulation {
 	//部分环境模拟
 	private static Environment enviroSimulation(Parameter para) {
 		Environment envi = new Environment();
-		envi.Z = 0;
+		envi.Z = Environment.NZ;
 		int n; //相遇的节点数
 		double[] p	= new double[100];
 		envi.Z = calculateZ(envi.Z, para.p);
+		Environment.NZ = envi.Z;
 		
 		for(double i = 0; i < StateParam.Nmax - StateParam.Nmin; i++) {
 			p[(int) i] = Math.pow(Math.E, -1.5*Math.pow(3, 0.5)*Math.pow(para.a,2))*Math.pow(1.5*Math.pow(3, 0.5)*Math.pow(para.a,2)*para.lamdac, i)/ getNFactorial((long)i);
@@ -493,7 +556,12 @@ public class Simulation {
 	private static int selectN(double[] p) {
 		 double m = 0;
 		 Random r = new Random(); //r为0至1的随机数
-		 double t = r.nextDouble();
+		 double sum = 0;
+		 for(int i = 0; i<p.length;i++)
+			 sum += p[i];
+		 
+		 
+		 double t = r.nextDouble() * sum;
 		 for (int i = 0; i < StateParam.Nmax - StateParam.Nmin; i++) {
 		    /**
 		     * 产生的随机数在m~m+P[i]间则认为选中了i，因此i被选中的概率是P[i]

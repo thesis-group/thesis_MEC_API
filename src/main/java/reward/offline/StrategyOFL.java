@@ -6,6 +6,9 @@ import tools.Calculus;
 
 import java.util.Random;
 import java.util.function.Function;
+
+import org.apache.commons.math3.special.Erf;
+
 import reward.*;
 import simulation.OperatingTimes;
 
@@ -125,7 +128,7 @@ public enum StrategyOFL implements StrategyServiceOFL {
 
             //计算瑞利分布函数
             Function<Double,Double> f =
-                    x -> (x*x/adHocParam.sigma)*Math.exp(-x*x/(2*adHocParam.sigma*adHocParam.sigma));
+            		x -> (x*x/adHocParam.sigma)*Math.exp(-x*x/(2*adHocParam.sigma*adHocParam.sigma));
 
             //通过自组织网的一次执行时间 这里原公式E_cp 就当做是E_speed了
             double taoAd = task.getIp() / adHocParam.rad * OperatingTimes.tuA
@@ -139,29 +142,24 @@ public enum StrategyOFL implements StrategyServiceOFL {
 
             double middle1 = 0.0;
 
-            for(int i = 0 ; i <=4 ; i++){
-                middle1+= Math.pow(-1,i)
-                        * Math.pow((adHocParam.R + adHocParam.r)/(Math.sqrt(2.0)*Math.abs(adHocParam.sigma)),2*i+1)
-                        /(stage(i) * (2*i+1)) ;
-            }
+            middle1 = Erf.erf(1/(Math.sqrt(2)*Math.abs(AdHocParam.sigma))*(adHocParam.R + adHocParam.r))- Erf.erf(0);
             //水平情况
                 //呈同一方向  假设v1和v2都是标量
                 double v = Math.abs(adHocParam.v1 - adHocParam.v2);
-                double finalV = v;
+
                 double m1 = adHocParam.R + adHocParam.r;
-                double f0s = 2 * adHocParam.sigma * adHocParam.sigma * middle1
+                double f0s = Math.sqrt(Math.PI)*Math.pow(AdHocParam.sigma,4) * middle1
                         - Math.pow(adHocParam.R + adHocParam.r, 2)
                         * Math.exp(-(Math.pow(adHocParam.R + adHocParam.r, 2))/2 * adHocParam.sigma*adHocParam.sigma)
                         + (v + Argument.epsilon) * taoAd
                         * (Math.exp(-4) * m1 * Math.pow(adHocParam.R + adHocParam.r, 2)
                         +Math.exp(-6)*Math.pow(adHocParam.sigma,4)*Math.pow(m1,-2)*Math.pow(adHocParam.R + adHocParam.r, 3)
                         +0.5*Math.exp(-8)*Math.pow(m1,-1)*Math.pow(adHocParam.R + adHocParam.r, 4));
-                System.out.println(f0s);
                 //呈不同方向
                 v = adHocParam.v1 + adHocParam.v2;
                 double m2 = -(adHocParam.R + adHocParam.r);
 //
-                double f0d = 2 * adHocParam.sigma * adHocParam.sigma * middle1
+                double f0d =  Math.sqrt(Math.PI)*Math.pow(AdHocParam.sigma,4) * middle1
                         - Math.pow(adHocParam.R + adHocParam.r, 2)
                         * Math.exp(-(Math.pow(adHocParam.R + adHocParam.r, 2))/2 * adHocParam.sigma*adHocParam.sigma)
                         + (v + Argument.epsilon) * taoAd
@@ -170,7 +168,14 @@ public enum StrategyOFL implements StrategyServiceOFL {
                         +0.5*Math.exp(-8)*Math.pow(m2,-1)*Math.pow(adHocParam.R + adHocParam.r, 4));;
             //垂直情况 d不知道什么 觉得可能还是x吧 TODO d是个啥
             v = Math.sqrt(adHocParam.v1*adHocParam.v1 + adHocParam.v2*adHocParam.v2);
-            double f1 =0.02;
+            double f1 = Math.sqrt(Math.PI)*Math.pow(AdHocParam.sigma,4) * middle1
+            		 - Math.pow(adHocParam.R + adHocParam.r, 2)
+            		 * Math.exp(-(Math.pow(adHocParam.R + adHocParam.r, 2))/2 * adHocParam.sigma*adHocParam.sigma)
+            		 + (v + Argument.epsilon) * taoAd
+            		 * (Math.exp(-4) * m1 * Math.pow(adHocParam.R + adHocParam.r, 2)
+            		 + Math.exp(-6)*Math.pow(adHocParam.sigma,4)*Math.pow(m1,-2)*Math.pow(adHocParam.R + adHocParam.r, 3)
+            		 +0.5*Math.exp(-8)*Math.pow(m1,-1)*Math.pow(adHocParam.R + adHocParam.r, 4));		 
+            		
             //综合的期望失败率
             double pOf = pHt * (f0s+f0d) + pVt * f1;
             //TODO 我理解用来计算n要用的是泊松过程的期望

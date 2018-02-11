@@ -55,7 +55,7 @@ public enum Strategy implements StrategyService {
             //计算上行传输错误概率
             double pUp=cloudletParam.fUp*(1-cloudletParam.fDown)/(1-cloudletParam.fUp*cloudletParam.fDown);
             //计算下行传输错误概率
-            double pDown=cloudletParam.eDown*(1-cloudletParam.fUp)/(1-cloudletParam.fUp*cloudletParam.fDown);
+            double pDown=cloudletParam.fDown*(1-cloudletParam.fUp)/(1-cloudletParam.fUp*cloudletParam.fDown);
             //计算任务一次尝试执行的期望时间
             double Etime=pUp*(task.getIp()/cloudletParam.rUp)*cloudletParam.delta+(1-pUp)*((task.getIp()/cloudletParam.rUp)*cloudletParam.delta+task.getWl()/cloudletParam.sCloudlet+(task.getOp()/cloudletParam.rDown)*cloudletParam.delta);
 

@@ -5,6 +5,7 @@ public class Environment {
 	public int V;
 	public int N;
 	public int times;
+	public static int NZ;
 	
 	public Environment(){
 		this.Z = 0;

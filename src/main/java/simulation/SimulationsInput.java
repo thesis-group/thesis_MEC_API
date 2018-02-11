@@ -19,13 +19,13 @@ public class SimulationsInput {
         BufferedReader br = new BufferedReader(reader); // 建立一个对象，它把文件内容转成计算机能读懂的语言  
         String line = "";  
         line = br.readLine();  
-        int i = 0;
+  
         int k = Integer.parseInt(line.trim());
         line = br.readLine();  
-        Task tsel = new Task();
+        
         while (line != null) {  
             String[] a = line.trim().split("\t");
-        	
+            Task tsel = new Task();
             
             tsel.setWl(Double.parseDouble(a[1]));
             tsel.setIp(Double.parseDouble(a[2]));
@@ -35,7 +35,7 @@ public class SimulationsInput {
             
             task.add(tsel);
         	
-        	i++;
+      
         	line = br.readLine(); // 一次读入一行数据  
         }
         
@@ -44,7 +44,7 @@ public class SimulationsInput {
              e.printStackTrace();  
          }
 		 
-		 Simulation.DiaoDu(Result.load(), Parameter.beita, task, 1);
+		 Simulation.DiaoDu(Result.load(), Parameter.beita, task, 0);
 
 	}
 }
